@@ -28,6 +28,7 @@ public:
   // public void right();
   void speedUp();
   void speedDown();
+  void setSpeed(float speed);
 };
 
 #endif

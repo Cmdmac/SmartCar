@@ -35,7 +35,7 @@ void Motor::speedUp() {
     this->speed = 1;
   }
   Serial.println(this->speed);
-  analogWrite(this->pinPwm, this->speed);  // 速度值可根据需要调整
+  analogWrite(this->pinPwm, this->speed);  
 }
 
 void Motor::speedDown() {
@@ -43,5 +43,9 @@ void Motor::speedDown() {
   if (this->speed <= 0) {
     this->speed = 0.1;
   }
-  analogWrite(this->pinPwm, this->speed);  // 速度值可根据需要调整
+  analogWrite(this->pinPwm, this->speed);  
+}
+
+void Motor::setSpeed(float speed) {
+  analogWrite(this->pinPwm, this->speed);  
 }

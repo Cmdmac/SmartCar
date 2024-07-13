@@ -3,8 +3,14 @@
 #include "Motor.h"
 
 class Motor_L298N : public Motor {
-  public:
-    Motor_L298N(int pinPos, int pinNeg, int pinPwm, int stby);
+  private:
+    int pinStby;
 
-}
+  public:
+    Motor_L298N(int pinPos, int pinNeg, int pinPwm, int pinStby);
+
+    void forward();
+    void backward();
+    void stop();
+};
 #endif

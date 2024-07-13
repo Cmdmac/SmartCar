@@ -1,7 +1,7 @@
 #ifndef MOTOR_H_
 #define MOTOR_H_
 class Motor {
-  private:
+  protected:
   int pinPos;
   int pinNeg;
   int pinPwm;
@@ -26,9 +26,9 @@ public:
   virtual void stop();
   // public void left();
   // public void right();
-  virtual void speedUp();
-  virtual void speedDown();
-  virtual void setSpeed(float speed);
+  void speedUp();
+  void speedDown();
+  void setSpeed(float speed);
 };
 
 #endif

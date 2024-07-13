@@ -12,26 +12,41 @@ Motor::Motor(int pinPos, int pinNeg, int pinPwm) {
   pinMode(this->pinPwm, OUTPUT);
 }
 
+
 void Motor::forward() {
-  Serial.println("forward");
-  Serial.println(this->speed);
-  digitalWrite(this->pinPos, HIGH);
-  digitalWrite(this->pinNeg, LOW);
-  analogWrite(this->pinPwm, this->speed  * 255);  
+  Serial.println("Motor forward");
 
 }
 
 void Motor::backward() {
-  digitalWrite(this->pinPos, LOW);
-  digitalWrite(this->pinNeg, HIGH);
+ 
 }
 
 void Motor::stop() {
-    Serial.println("stop");
-  digitalWrite(this->pinPos, LOW);
-  digitalWrite(this->pinNeg, LOW);
-  analogWrite(this->pinPwm, 0);  
+
 }
+
+// void Motor::forward() {
+//   Serial.println("forward");
+//   Serial.println(this->speed);
+//   digitalWrite(this->pinPos, HIGH);
+//   digitalWrite(this->pinNeg, LOW);
+//   analogWrite(this->pinPwm, this->speed  * 255);  
+
+// }
+
+// void Motor::backward() {
+//   digitalWrite(this->pinPos, LOW);
+//   digitalWrite(this->pinNeg, HIGH);
+// }
+
+// void Motor::stop() {
+//     Serial.println("stop");
+//   digitalWrite(this->pinPos, LOW);
+//   digitalWrite(this->pinNeg, LOW);
+//   analogWrite(this->pinPwm, 0);  
+// }
+
 
 // public void Motor::left();
 // public void Motor::right();

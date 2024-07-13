@@ -5,13 +5,14 @@
 
 class Car {
   private:
-    Motor l;
-    Motor r;
+    Motor *l;
+    Motor *r;
     Servo servo;
 
 
   public:
-    Car(int pin1Pos, int pin1Neg, int pin1Pwm, int pin2Pos, int pin2Neg, int pin2Pwm, int pinServo);
+    Car(Motor* l, Motor *r);
+    // Car(int pin1Pos, int pin1Neg, int pin1Pwm, int pin2Pos, int pin2Neg, int pin2Pwm, int pinServo);
 
     void forward();
     void backward();

@@ -29,7 +29,7 @@ void Car::speedUp() {
   r->speedUp();
 }
 void Car::speedDown() {
-  l->speedUp();
+  l->speedDown();
   r->speedDown();
 }
 

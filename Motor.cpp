@@ -6,15 +6,19 @@ Motor::Motor(int pinPos, int pinNeg, int pinPwm) {
   this->pinPos = pinPos;
   this->pinNeg = pinNeg;
   this->pinPwm = pinPwm;
-  this->speed = 0.1;
+  this->speed = 0.5;
   pinMode(this->pinPos, OUTPUT);
   pinMode(this->pinNeg, OUTPUT);
   pinMode(this->pinPwm, OUTPUT);
 }
 
 void Motor::forward() {
+  Serial.println("forward");
+  Serial.println(this->speed);
   digitalWrite(this->pinPos, HIGH);
   digitalWrite(this->pinNeg, LOW);
+  analogWrite(this->pinPwm, this->speed  * 255);  
+
 }
 
 void Motor::backward() {
@@ -23,8 +27,10 @@ void Motor::backward() {
 }
 
 void Motor::stop() {
+    Serial.println("stop");
   digitalWrite(this->pinPos, LOW);
   digitalWrite(this->pinNeg, LOW);
+  analogWrite(this->pinPwm, 0);  
 }
 
 // public void Motor::left();
@@ -34,18 +40,21 @@ void Motor::speedUp() {
   if (this->speed > 1) {
     this->speed = 1;
   }
+  Serial.println("speedUp");
   Serial.println(this->speed);
-  analogWrite(this->pinPwm, this->speed);  
+  analogWrite(this->pinPwm, this->speed * 255);  
 }
 
 void Motor::speedDown() {
   this->speed = this->speed - 0.1;
-  if (this->speed <= 0) {
-    this->speed = 0.1;
+  if (this->speed < 0.2) {
+    this->speed = 0.2;
   }
-  analogWrite(this->pinPwm, this->speed);  
+  Serial.println("speedDown");
+    Serial.println(this->speed);
+  analogWrite(this->pinPwm, this->speed * 255);  
 }
 
 void Motor::setSpeed(float speed) {
-  analogWrite(this->pinPwm, this->speed);  
+  analogWrite(this->pinPwm, this->speed * 255);  
 }

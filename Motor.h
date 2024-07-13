@@ -21,14 +21,14 @@ class Motor {
 
 public:
   Motor(int pinPos, int pinNeg, int pinPwm);
-  void forward();
-  void backward();
-  void stop();
+  virtual void forward();
+  virtual void backward();
+  virtual void stop();
   // public void left();
   // public void right();
-  void speedUp();
-  void speedDown();
-  void setSpeed(float speed);
+  virtual void speedUp();
+  virtual void speedDown();
+  virtual void setSpeed(float speed);
 };
 
 #endif

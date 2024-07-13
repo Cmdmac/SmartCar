@@ -1,5 +1,5 @@
 #include "Motor.h"
-
+#include "Car.h"
 
 
 // 定义电机引脚
@@ -12,7 +12,7 @@ const int motor2Pin2 = 5;
 const int motor1SpeedPin = 9;
 const int motor2SpeedPin = 10;
 
-Motor motor(2, 3, 9);
+Car car = Car(2, 3, 8, 4, 5, 9, 6);
 
 void setup() {
   // // 设置电机控制引脚为输出模式
@@ -27,25 +27,29 @@ void setup() {
   Serial.begin(115200);
 }
 
+
 void loop() {
   
-  motor.forward();
-  delay(5000);
-  // motor.speedUp();
+  // car.forward();
   // delay(5000);
-  // motor.speedUp();
-  // delay(5000);
-  // motor.speedUp();
-  // delay(5000);
-  // motor.speedUp();
-  // delay(5000);
-  // motor.speedDown();
-  // delay(5000);
-  // motor.speedDown();
-  // delay(5000);
-  // motor.speedDown();
-  // delay(5000);
-  // motor.speedDown();
-  // delay(5000);
-  // motor.speedDown();
+  //  car.speedUp();
+  //  delay(5000);
+  //  car.speedDown();
+  //  delay(5000);
+  //  car.speedDown();
+  //  delay(5000);
+  //  car.speedDown();
+  //  delay(5000);
+  //  car.stop();
+  //  delay(5000);
+  // car.faceTo(90);
+  for (int i = 0; i <= 180; i+= 1) {
+    car.faceTo(i);
+    // delay(5);
+  }
+   for (int i = 180; i > 0; i-= 1) {
+    car.faceTo(i);
+    // delay(5);
+  }
+// 
 }

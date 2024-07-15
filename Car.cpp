@@ -1,6 +1,6 @@
 #include "Car.h"
 
-Car::Car(Motor *l, Motor *r) : l(l), r(r), servo(-1) {
+Car::Car(Motor *l, Motor *r, Servo *s, UltraSound *us) : l(l), r(r), s(s), us(us) {
 
 }
 
@@ -49,6 +49,10 @@ void Car::right() {
 }
 
 void Car::faceTo(int angle) {
-  this->servo.to(angle);
+  this->s->to(angle);
+}
+
+void Car::getDistance() {
+  this->us->getDistance();
 }
 

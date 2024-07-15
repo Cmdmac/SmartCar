@@ -2,16 +2,18 @@
 #define CAR_H_
 #include "Motor.h"
 #include "Servo.h"
+#include "UltraSound.h"
 
 class Car {
   private:
     Motor *l;
     Motor *r;
-    Servo servo;
+    Servo *s;
+    UltraSound *us;
 
 
   public:
-    Car(Motor* l, Motor *r);
+    Car(Motor* l, Motor *r, Servo *s, UltraSound *us);
     // Car(int pin1Pos, int pin1Neg, int pin1Pwm, int pin2Pos, int pin2Neg, int pin2Pwm, int pinServo);
 
     void forward();
@@ -27,6 +29,8 @@ class Car {
     void right();
 
     void faceTo(int angle);
+
+    void getDistance();
 
 };
 

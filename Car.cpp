@@ -8,6 +8,21 @@ Car::Car(Motor *l, Motor *r, Servo *s, UltraSound *us) : l(l), r(r), s(s), us(us
 //   // this->servo.attach(pinServo);
 // }
 
+void Car::setSerialChanelWithHub(SoftwareSerial* serial) {
+  this->serialChanelWithHub = serial;
+}
+
+void Car::waitForHubMessages() {
+  if (this->serialChanelWithHub == NULL) {
+    return;
+  }
+
+  while(this->serialChanelWithHub->available()) {
+    int c = this->serialChanelWithHub->read();
+
+  }
+}
+
 void Car::forward() {
   l->forward();
   r->forward();

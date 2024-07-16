@@ -3,6 +3,7 @@
 #include "Motor.h"
 #include "Servo.h"
 #include "UltraSound.h"
+#include <SoftwareSerial.h>
 
 class Car {
   private:
@@ -10,12 +11,15 @@ class Car {
     Motor *r;
     Servo *s;
     UltraSound *us;
-
+    SoftwareSerial *serialChanelWithHub;
 
   public:
     Car(Motor* l, Motor *r, Servo *s, UltraSound *us);
     // Car(int pin1Pos, int pin1Neg, int pin1Pwm, int pin2Pos, int pin2Neg, int pin2Pwm, int pinServo);
 
+    void setSerialChanelWithHub(SoftwareSerial* serial);
+    void waitForHubMessages();
+    
     void forward();
     void backward();
     void stop();

@@ -1,12 +1,17 @@
 #include "Motor_TB6612FNG.h"
 #include "Car.h"
 #include "UltraSound.h"
+#include <SoftwareSerial.h>
+
 
 Motor_TB6612FNG l = Motor_TB6612FNG(2, 3, 9, 7);
 Motor_TB6612FNG r = Motor_TB6612FNG(4, 5, 11, 7);
 Servo s = Servo(8);
 UltraSound us = UltraSound(12, 13);
 Car car = Car(&l, &r, &s, &us);
+
+
+SoftwareSerial mySerial(0,1); //定义D2、D3分别为TX、RX
 
 
 void setup() {
@@ -20,6 +25,8 @@ void setup() {
   // pinMode(motor1SpeedPin, OUTPUT);
   // pinMode(motor2SpeedPin, OUTPUT);
   Serial.begin(115200);
+  mySerial.begin(115200);  //以9600波特率打开软串口
+
 
 }
 
@@ -42,7 +49,7 @@ void loop() {
   //  car.stop();
   //  delay(5000);
   // car.faceTo(90);
-  // for (int i = 0; i <= 180; i+= 1) {
+  // for (int i = 0; i <= 50; i+= 1) {
   //   car.faceTo(i);
   //   // delay(5);
   // }
@@ -51,28 +58,16 @@ void loop() {
   //   // delay(5);
   // }
 
-  //  digitalWrite(trigPin, LOW);  // 先将触发引脚拉低 2μs 以上
-  // delayMicroseconds(2);
-
-  // digitalWrite(trigPin, HIGH);  // 给触发引脚至少 10μs 的高电平脉冲
-  // delayMicroseconds(10);
-  // digitalWrite(trigPin, LOW);
-
-  // long duration = pulseIn(echoPin, HIGH);  // 测量回声引脚高电平持续的时间
-
-  // // 根据声速计算距离（声速 340m/s，往返距离）
-  // long distance = duration * 0.034 / 2;
-
-  // if (duration == 0) {
-  //   Serial.println("Out of range");
-  // } else {
-  //   Serial.print("Distance: ");
-  //   Serial.print(distance);
-  //   Serial.println(" cm");
-  // }
-
-  car.getDistance();
-  delay(100);  // 稍作延迟
+  // car.getDistance();
+  // delay(100);  // 稍作延迟
+  while(mySerial.available())  
+   {  
+    int c;
+      c=mySerial.read();
+      Serial.println (c);
+      
+   }
+        //  Serial.println ("end");
 
 // 
 }

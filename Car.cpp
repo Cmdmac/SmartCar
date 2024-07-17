@@ -1,4 +1,5 @@
 #include "Car.h"
+#include <Arduino.h>
 
 Car::Car(Motor *l, Motor *r, Servo *s, UltraSound *us) : l(l), r(r), s(s), us(us) {
 
@@ -12,15 +13,29 @@ void Car::setSerialChanelWithHub(SoftwareSerial* serial) {
   this->serialChanelWithHub = serial;
 }
 
+  char data[128] = {0};
+  // memset(data, 0, 128);
+  int count = 0;
+
 void Car::waitForHubMessages() {
   if (this->serialChanelWithHub == NULL) {
     return;
   }
 
-  while(this->serialChanelWithHub->available()) {
-    int c = this->serialChanelWithHub->read();
 
+  while(this->serialChanelWithHub->available() > 0) {
+    int c = this->serialChanelWithHub->read();
+    data[count++] = c;
+    if (c == '\n') {
+      Serial.print(data);
+      memset(data, 0, 128);
+      count = 0;
+      break;
+    }
   }
+  // Serial.println(count);
+  // Serial.println(data);
+
 }
 
 void Car::forward() {

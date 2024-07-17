@@ -11,7 +11,7 @@ UltraSound us = UltraSound(12, 13);
 Car car = Car(&l, &r, &s, &us);
 
 
-SoftwareSerial mySerial(0,1); //定义D2、D3分别为TX、RX
+SoftwareSerial mySerial(A2,A3); //定义D2、D3分别为TX、RX
 
 
 void setup() {
@@ -25,9 +25,9 @@ void setup() {
   // pinMode(motor1SpeedPin, OUTPUT);
   // pinMode(motor2SpeedPin, OUTPUT);
   Serial.begin(115200);
-  mySerial.begin(115200);  //以9600波特率打开软串口
+  mySerial.begin(9600);  //以9600波特率打开软串口
 
-
+  car.setSerialChanelWithHub(&mySerial);
 }
 
 
@@ -60,14 +60,19 @@ void loop() {
 
   // car.getDistance();
   // delay(100);  // 稍作延迟
-  while(mySerial.available())  
-   {  
-    int c;
-      c=mySerial.read();
-      Serial.println (c);
+  // while(mySerial.available())  
+  //  {  
+  //   int c;
+  //     c=mySerial.read();
+  //     Serial.println (c);
       
-   }
-        //  Serial.println ("end");
+  //  }
+  car.waitForHubMessages();
+  // int c = mySerial.write("hello");
+  // // mySerial.flush();
+
+  //  delay(1000);
+        //  Serial.println (c);
 
 // 
 }

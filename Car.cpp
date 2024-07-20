@@ -1,5 +1,6 @@
 #include "Car.h"
 #include <Arduino.h>
+#include "Command.h"
 
 Car::Car(Motor *l, Motor *r, Servo *s, UltraSound *us) : l(l), r(r), s(s), us(us) {
 
@@ -13,9 +14,30 @@ void Car::setSerialChanelWithHub(SoftwareSerial* serial) {
   this->serialChanelWithHub = serial;
 }
 
-  char data[128] = {0};
-  // memset(data, 0, 128);
-  int count = 0;
+void Car::parse(char* data, int len) {
+  int command = data[0];
+  switch(command) {
+    case CMD_FORWARD:
+      forward();
+      break;
+
+    case CMD_BACKWARD:
+      backward();
+      break;
+
+    case CMD_TURN_LEFT:
+      left();
+      break;
+
+    case CMD_TURN_RIGHT:
+      right();
+      break;
+
+    case CMD_BRAKE:
+      stop();
+      break;
+  }
+}
 
 void Car::waitForHubMessages() {
   if (this->serialChanelWithHub == NULL) {
@@ -28,6 +50,7 @@ void Car::waitForHubMessages() {
     data[count++] = c;
     if (c == '\n') {
       Serial.print(data);
+      parse(data, count);
       memset(data, 0, 128);
       count = 0;
       break;

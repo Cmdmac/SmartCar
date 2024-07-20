@@ -13,6 +13,12 @@ class Car {
     UltraSound *us;
     SoftwareSerial *serialChanelWithHub;
 
+    char data[128] = {0};
+    // memset(data, 0, 128);
+    int count = 0;
+
+    void parse(char* data, int len);
+
   public:
     Car(Motor* l, Motor *r, Servo *s, UltraSound *us);
     // Car(int pin1Pos, int pin1Neg, int pin1Pwm, int pin2Pos, int pin2Neg, int pin2Pwm, int pinServo);
@@ -35,6 +41,7 @@ class Car {
     void faceTo(int angle);
 
     void getDistance();
+
 
 };
 

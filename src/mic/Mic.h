@@ -1,8 +1,8 @@
 #ifndef _MIC_H_
 #define _MIC_H_
-#include <Arduino.h>
-#include "driver/i2s_std.h"
+#include <ESP_I2S.h>
 
+#include <Arduino.h>
 
 #define SAMPLE_RATE 44100
 #define BITS_PER_SAMPLE I2S_BITS_PER_SAMPLE_16BIT
@@ -24,17 +24,19 @@
 #define I2S_IN_DIN 41 // SD
 #define RECORD_TIME   10  // seconds, The maximum value is 240
 
+typedef std::function<void(uint8_t*, size_t)> MicCallback;
+
 class Mic {
     public:
         
-        void setup(int pinWS, int pinSD, int pinSCK);
-        void recordWav(const char* url, int recordTime, int sampleRate, int sampleBits);
+        void setup();
+        void recordWav(int recordTime, MicCallback callback);
 
         void loop();
     private:
-        void generateWavHeader(uint8_t *wav_header, uint32_t wav_size, uint32_t sample_rate);
         // int mSampleRate;
-        // int mSampleBits;
+        // 创建一个 I2SClass 实例
+        I2SClass i2s;
 };
 
 #endif

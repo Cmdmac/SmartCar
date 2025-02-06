@@ -3,11 +3,11 @@
 #include "src/common/Command.h"
 #include "src/ibeacon/iBeacon.h"
 #include "src/net/net.h"
-// #include "QMC5883LCompass.h"
+#include "src/compass/QMC5883LCompass.h"
 
 Net net;
 iBeaconFinder finder;
-// QMC5883LCompass compass;
+QMC5883LCompass compass;
 
 void iBeaconTask() {
 // Serial.println("scanIBeacons");
@@ -45,22 +45,22 @@ void iBeaconTask() {
 void compassTask() {
 
     // Read compass values
-    // compass.read();
+    compass.read();
     // Return Azimuth reading
-    // int a = compass.getAzimuth() + 180;
-    // std::string s = CommandBuilder::CreateCodeJson(CMD_REPORT_DIRECTION, a);
-    // Serial.println(s.c_str());
-    // net.ws().send(s.c_str());
-    // Serial.print("A: ");
-    // Serial.print(a);
-    // Serial.println();
+    int a = compass.getAzimuth() + 180;
+    std::string s = CommandBuilder::CreateCodeJson(CMD_REPORT_DIRECTION, a);
+    Serial.println(s.c_str());
+    net.ws().send(s.c_str());
+    Serial.print("A: ");
+    Serial.print(a);
+    Serial.println();
 }
 
 void reportTask(void* p) {
 	while(1) {
         // compassTask(NULL);
-        iBeaconTask();
-        // compassTask();
+        // iBeaconTask();
+        compassTask();
         delay(1000);
 	}
 }
@@ -69,6 +69,41 @@ void startTasks() {
     
     finder.init();
     finder.startFind();
-    // compass.init(PIN_COMPASS_SDA, PIN_COMPASS_SCL);
+    compass.init(4, 5);
     xTaskCreatePinnedToCore(reportTask, "reportTask", 4096, NULL, 1, NULL, 0);
+}
+
+void scanI2CDevices() {
+  Serial.println("\nI2C Scanner");
+  Serial.println("Scanning...");
+
+  byte error, address;
+  int nDevices;
+
+  nDevices = 0;
+  for (address = 1; address < 127; address++) {
+    // 尝试连接到当前地址
+    Wire.beginTransmission(address);
+    error = Wire.endTransmission();
+
+    if (error == 0) {
+      Serial.print("I2C device found at address 0x");
+      if (address < 16) {
+        Serial.print("0");
+      }
+      Serial.println(address, HEX);
+      nDevices++;
+    } else if (error == 4) {
+      Serial.print("Unknown error at address 0x");
+      if (address < 16) {
+        Serial.print("0");
+      }
+      Serial.println(address, HEX);
+    }
+  }
+  if (nDevices == 0) {
+    Serial.println("No I2C devices found\n");
+  } else {
+    Serial.println("done\n");
+  }
 }

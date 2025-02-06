@@ -12,11 +12,12 @@
 // #include "lib/speaker/Speaker.h"
 // #include "lib/filewebserver/FileWebServer.h"
 // #include <PCA9557.h>
+#include "src/compass/QMC5883LCompass.h"
 
 // using namespace std;
 // using namespace websockets;
 
-// extern QMC5883LCompass compass;
+extern QMC5883LCompass compass;
 extern Net net;
 // extern iBeaconFinder finder;
 
@@ -60,7 +61,7 @@ void setup() {
   //   }
   // });
 
-  // startTasks();
+  startTasks();
 
   // fileWebServer.setup();
   // analogMic.setup();

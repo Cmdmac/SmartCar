@@ -28,7 +28,7 @@ void QMC5883LCompass::init(int sda, int scl){
 	@since v0.1;
 **/
 // Set I2C Address if different then default.
-void QMC5883LCompass::setADDR(byte b){
+void QMC5883LCompass::setADDR(uint8_t b){
 	_ADDR = b;
 }
 
@@ -42,7 +42,7 @@ void QMC5883LCompass::setADDR(byte b){
 	@since v0.1;
 **/
 // Write register values to chip
-void QMC5883LCompass::_writeReg(byte r, byte v){
+void QMC5883LCompass::_writeReg(uint8_t r, uint8_t v){
 	Wire.beginTransmission(_ADDR);
 	Wire.write(r);
 	Wire.write(v);
@@ -57,7 +57,7 @@ void QMC5883LCompass::_writeReg(byte r, byte v){
 	@since v0.1;
 **/
 // Set chip mode
-void QMC5883LCompass::setMode(byte mode, byte odr, byte rng, byte osr){
+void QMC5883LCompass::setMode(uint8_t mode, uint8_t odr, uint8_t rng, uint8_t osr){
 	_writeReg(0x09,mode|odr|rng|osr);
 }
 
@@ -89,7 +89,7 @@ void QMC5883LCompass::setReset(){
 }
 
 // 1 = Basic 2 = Advanced
-void QMC5883LCompass::setSmoothing(byte steps, bool adv){
+void QMC5883LCompass::setSmoothing(uint8_t steps, bool adv){
 	_smoothUse = true;
 	_smoothSteps = ( steps > 10) ? 10 : steps;
 	_smoothAdvanced = (adv == true) ? true : false;
@@ -209,7 +209,7 @@ void QMC5883LCompass::read(){
 	Wire.write(0x00);
 	int err = Wire.endTransmission();
 	if (!err) {
-		Wire.requestFrom(_ADDR, (byte)6);
+		Wire.requestFrom(_ADDR, (uint8_t)6);
 		_vRaw[0] = (int)(int16_t)(Wire.read() | Wire.read() << 8);
 		_vRaw[1] = (int)(int16_t)(Wire.read() | Wire.read() << 8);
 		_vRaw[2] = (int)(int16_t)(Wire.read() | Wire.read() << 8);
@@ -220,7 +220,7 @@ void QMC5883LCompass::read(){
 			_smoothing();
 		}
 		
-		//byte overflow = Wire.read() & 0x02;
+		//uint8_t overflow = Wire.read() & 0x02;
 		//return overflow << 2;
 	}
 }
@@ -264,8 +264,8 @@ void QMC5883LCompass::_applyCalibration(){
 	@since v0.3;
 **/
 void QMC5883LCompass::_smoothing(){
-	byte max = 0;
-	byte min = 0;
+	uint8_t max = 0;
+	uint8_t min = 0;
 	
 	if ( _vScan > _smoothSteps - 1 ) { _vScan = 0; }
 	
@@ -373,12 +373,12 @@ int QMC5883LCompass::getAzimuth(){
 	@since v1.0.1 - function now requires azimuth parameter.
 	@since v0.2.0 - initial creation
 	
-	@return byte direction of bearing
+	@return uint8_t direction of bearing
 */
-byte QMC5883LCompass::getBearing(int azimuth){
+uint8_t QMC5883LCompass::getBearing(int azimuth){
 	unsigned long a = ( azimuth > -0.5 ) ? azimuth / 22.5 : (azimuth+360)/22.5;
 	unsigned long r = a - (int)a;
-	byte sexdec = 0;	
+	uint8_t sexdec = 0;	
 	sexdec = ( r >= .5 ) ? ceil(a) : floor(a);
 	return sexdec;
 }

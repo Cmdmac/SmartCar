@@ -5,6 +5,6 @@
 // iBeaconFinder finder;
 // QMC5883LCompass compass;
 void startTasks();
-
+void scanI2CDevices();
 
 #endif

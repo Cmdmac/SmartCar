@@ -49,7 +49,7 @@ void Mic::recordWav(int recordTime, MicCallback callback)
   size_t wav_size;
   // 录制 20 秒的音频数据
   wav_buffer = i2s.recordWAV(recordTime, &wav_size);
-  Serial.print("wav_size=");
+  Serial.print("record wav_size=");
   Serial.println(wav_size);
   
   callback(wav_buffer, wav_size);

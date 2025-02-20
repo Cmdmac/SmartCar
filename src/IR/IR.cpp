@@ -143,7 +143,7 @@ void IR::startLearn(int learnCount) {
     .resolution = 1000000,         /*!< RMT resolution, 1M, 1 tick = 1us*/
 
     .learn_count = learnCount,              /*!< IR learn count needed */
-    .learn_gpio = GPIO_NUM_38,     /*!< IR learn io that consumed by the sensor */
+    .learn_gpio = 10,     /*!< IR learn io that consumed by the sensor */
     .callback = ir_learn_auto_learn_cb,       /*!< IR learn result callback for user */
 
     .task_priority = 5,   /*!< IR learn task priority */

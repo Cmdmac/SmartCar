@@ -77,7 +77,7 @@ void scanI2CDevices() {
   Serial.println("\nI2C Scanner");
   Serial.println("Scanning...");
 
-  byte error, address;
+  uint8_t error, address;
   int nDevices;
 
   nDevices = 0;

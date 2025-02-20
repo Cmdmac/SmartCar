@@ -8,22 +8,26 @@
 // #include "lib/camera/Camera.h"
 #include "src/led/Led.h"
 #include "src/net/DataChannel.h"
+#include "src/ir/IR.h"
 // #include "Hall.h"
 // #include "lib/speaker/Speaker.h"
 // #include "lib/filewebserver/FileWebServer.h"
 // #include <PCA9557.h>
-#include "src/compass/QMC5883LCompass.h"
+// #include "src/compass/QMC5883LCompass.h"
 
 // using namespace std;
 // using namespace websockets;
 
-extern QMC5883LCompass compass;
+// extern QMC5883LCompass compass;
 extern Net net;
 // extern iBeaconFinder finder;
 
 // FileWebServer fileWebServer;
+// Mic mic;
 
 Led led;
+
+IR ir;
 
 // PCA9557 io(0x19, &Wire); // 0x19 for iFarm4G board
 // #define D1_PIN (0)
@@ -61,21 +65,22 @@ void setup() {
   //   }
   // });
 
-  startTasks();
+  // startTasks();
 
   // fileWebServer.setup();
   // analogMic.setup();
   // analogMic.record("/analogvoice.wav", 5);
 
-  // mic.setup(38, 37, 36);
-  // mic.recordWav("", 20, SAMPLE_RATE, SAMPLE_BITS);
+  // mic.setup();
+  // mic.recordWav(20, SAMPLE_RATE, SAMPLE_BITS);
 
   // camera.setUp();
   // camera.startStreamServer();
 
   // speaker.setup();
   // speaker.play("http://192.168.2.153:4000/voice.mp3");
-
+  ir.setup();
+  // ir.startLearn(4);
   
 }
 

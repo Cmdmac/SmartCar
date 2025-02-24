@@ -4,3 +4,4 @@ dependencies:
     version: '*'
   bblanchon/arduinojson: ^7.3.0
   espressif/esp32-camera: ^2.0.15
+  espressif/ir_learn: ^1.0.0

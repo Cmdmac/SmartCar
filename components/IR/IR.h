@@ -2,19 +2,12 @@
 #define _IR_H_
 #include <Arduino.h>
 #include <assert.h>
-#include <IRrecv.h>
-#include <IRremoteESP8266.h>
-#include <IRac.h>
-#include <IRtext.h>
-#include <IRutils.h>
-/* FreeRTOS includes */
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/queue.h"
+#include "ir_learn.h"
+#include "ir_encoder.h"
 
 #define IR_TX_GPIO_NUM                  GPIO_NUM_39
 #define IR_RX_GPIO_NUM                  GPIO_NUM_38
-
+#define IR_RESOLUTION_HZ                1000000 // 1MHz resolution, 1 tick = 1us
 
 #define IR_BUFFER_SIZE 1024
 
@@ -37,10 +30,9 @@ class IR {
         void send();
     private:
       void loop();
-      // Use turn on the save buffer feature for more complete capture coverage.
-      IRrecv mIRRecv;//(kRecvPin, kCaptureBufferSize, kTimeout, true);
-      decode_results mDecodeResults;// results;  // Somewhere to store the results
-      TaskHandle_t mTaskHandle;
+      // void ir_learn_auto_learn_cb(ir_learn_state_t state, unsigned char sub_step, struct ir_learn_sub_list_head *data);
+      // void ir_learn_save_result(struct ir_learn_sub_list_head *data_save, struct ir_learn_sub_list_head *data_src);
+
 };
 
 #endif

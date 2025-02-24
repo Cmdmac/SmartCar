@@ -2,7 +2,7 @@
 #include "Led.h"
 #include "Servo2.h"
 #include "DataChannel.h"
-#include "net.h"
+#include "Net.h"
 
 Led led;
 extern Net net;

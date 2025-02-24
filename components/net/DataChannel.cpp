@@ -2,7 +2,7 @@
 #include "Uri.h"
 #include "Command.h"
 #include "iBeacon.h"
-#include "net.h"
+#include "Net.h"
 #include "QMC5883LCompass.h"
 
 Net net;

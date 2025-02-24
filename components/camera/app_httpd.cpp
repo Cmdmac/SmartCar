@@ -15,7 +15,7 @@
 #include "esp_timer.h"
 #include "esp_camera.h"
 #include "img_converters.h"
-#include "fb_gfx.h"
+// #include "fb_gfx.h"
 #include "driver/ledc.h"
 #include "sdkconfig.h"
 #include "camera_index.h"
@@ -312,7 +312,7 @@ static esp_err_t bmp_handler(httpd_req_t *req)
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
     char ts[32];
-    snprintf(ts, 32, "%ld.%06ld", fb->timestamp.tv_sec, fb->timestamp.tv_usec);
+    snprintf(ts, 32, "%ld.%06ld", (long int)fb->timestamp.tv_sec, fb->timestamp.tv_usec);
     httpd_resp_set_hdr(req, "X-Timestamp", (const char *)ts);
 
 
@@ -330,7 +330,7 @@ static esp_err_t bmp_handler(httpd_req_t *req)
 #if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
     uint64_t fr_end = esp_timer_get_time();
 #endif
-    ESP_LOGI(TAG, "BMP: %llums, %uB", (uint64_t)((fr_end - fr_start) / 1000), buf_len);
+    // ESP_LOGI(TAG, "BMP: %llums, %uB", (uint64_t)((fr_end - fr_start) / 1000), buf_len);
     return res;
 }
 
@@ -378,7 +378,7 @@ static esp_err_t capture_handler(httpd_req_t *req)
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
     char ts[32];
-    snprintf(ts, 32, "%ld.%06ld", fb->timestamp.tv_sec, fb->timestamp.tv_usec);
+    snprintf(ts, 32, "%ld.%06ld", (long int)fb->timestamp.tv_sec, fb->timestamp.tv_usec);
     httpd_resp_set_hdr(req, "X-Timestamp", (const char *)ts);
 
 #if CONFIG_ESP_FACE_DETECT_ENABLED
@@ -415,7 +415,7 @@ static esp_err_t capture_handler(httpd_req_t *req)
 #if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
         int64_t fr_end = esp_timer_get_time();
 #endif
-        ESP_LOGI(TAG, "JPG: %uB %ums", (uint32_t)(fb_len), (uint32_t)((fr_end - fr_start) / 1000));
+        // ESP_LOGI(TAG, "JPG: %uB %ums", (uint32_t)(fb_len), (uint32_t)((fr_end - fr_start) / 1000));
         return res;
 #if CONFIG_ESP_FACE_DETECT_ENABLED
     }
@@ -769,7 +769,7 @@ static esp_err_t stream_handler(httpd_req_t *req)
 #if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
         uint32_t avg_frame_time = ra_filter_run(&ra_filter, frame_time);
 #endif
-        ESP_LOGI(TAG, "MJPG: %uB %ums (%.1ffps), AVG: %ums (%.1ffps)"
+        /* ESP_LOGI(TAG, "MJPG: %uB %ums (%.1ffps), AVG: %ums (%.1ffps)"
 #if CONFIG_ESP_FACE_DETECT_ENABLED
                       ", %u+%u+%u+%u=%u %s%d"
 #endif
@@ -782,7 +782,7 @@ static esp_err_t stream_handler(httpd_req_t *req)
                  (uint32_t)ready_time, (uint32_t)face_time, (uint32_t)recognize_time, (uint32_t)encode_time, (uint32_t)process_time,
                  (detected) ? "DETECTED " : "", face_id
 #endif
-        );
+        );*/
     }
 
 #ifdef CONFIG_LED_ILLUMINATOR_ENABLED
@@ -833,7 +833,7 @@ static esp_err_t cmd_handler(httpd_req_t *req)
     free(buf);
 
     int val = atoi(value);
-    ESP_LOGI(TAG, "%s = %d", variable, val);
+    // ESP_LOGI(TAG, "%s = %d", variable, val);
     sensor_t *s = esp_camera_sensor_get();
     int res = 0;
 
@@ -919,7 +919,7 @@ static esp_err_t cmd_handler(httpd_req_t *req)
 #endif
 #endif
     else {
-        ESP_LOGI(TAG, "Unknown command: %s", variable);
+        // ESP_LOGI(TAG, "Unknown command: %s", variable);
         res = -1;
     }
 
@@ -1033,7 +1033,7 @@ static esp_err_t xclk_handler(httpd_req_t *req)
     free(buf);
 
     int xclk = atoi(_xclk);
-    ESP_LOGI(TAG, "Set XCLK: %d MHz", xclk);
+    // ESP_LOGI(TAG, "Set XCLK: %d MHz", xclk);
 
     sensor_t *s = esp_camera_sensor_get();
     int res = s->set_xclk(s, LEDC_TIMER_0, xclk);
@@ -1067,7 +1067,7 @@ static esp_err_t reg_handler(httpd_req_t *req)
     int reg = atoi(_reg);
     int mask = atoi(_mask);
     int val = atoi(_val);
-    ESP_LOGI(TAG, "Set Register: reg: 0x%02x, mask: 0x%02x, value: 0x%02x", reg, mask, val);
+    // ESP_LOGI(TAG, "Set Register: reg: 0x%02x, mask: 0x%02x, value: 0x%02x", reg, mask, val);
 
     sensor_t *s = esp_camera_sensor_get();
     int res = s->set_reg(s, reg, mask, val);
@@ -1103,7 +1103,7 @@ static esp_err_t greg_handler(httpd_req_t *req)
     if (res < 0) {
         return httpd_resp_send_500(req);
     }
-    ESP_LOGI(TAG, "Get Register: reg: 0x%02x, mask: 0x%02x, value: 0x%02x", reg, mask, res);
+    // ESP_LOGI(TAG, "Get Register: reg: 0x%02x, mask: 0x%02x, value: 0x%02x", reg, mask, res);
 
     char buffer[20];
     const char * val = itoa(res, buffer, 10);
@@ -1138,7 +1138,7 @@ static esp_err_t pll_handler(httpd_req_t *req)
     int pclk = parse_get_var(buf, "pclk", 0);
     free(buf);
 
-    ESP_LOGI(TAG, "Set Pll: bypass: %d, mul: %d, sys: %d, root: %d, pre: %d, seld5: %d, pclken: %d, pclk: %d", bypass, mul, sys, root, pre, seld5, pclken, pclk);
+    // ESP_LOGI(TAG, "Set Pll: bypass: %d, mul: %d, sys: %d, root: %d, pre: %d, seld5: %d, pclken: %d, pclk: %d", bypass, mul, sys, root, pre, seld5, pclken, pclk);
     sensor_t *s = esp_camera_sensor_get();
     int res = s->set_pll(s, bypass, mul, sys, root, pre, seld5, pclken, pclk);
     if (res) {
@@ -1171,7 +1171,7 @@ static esp_err_t win_handler(httpd_req_t *req)
     bool binning = parse_get_var(buf, "binning", 0) == 1;
     free(buf);
 
-    ESP_LOGI(TAG, "Set Window: Start: %d %d, End: %d %d, Offset: %d %d, Total: %d %d, Output: %d %d, Scale: %u, Binning: %u", startX, startY, endX, endY, offsetX, offsetY, totalX, totalY, outputX, outputY, scale, binning);
+    // ESP_LOGI(TAG, "Set Window: Start: %d %d, End: %d %d, Offset: %d %d, Total: %d %d, Output: %d %d, Scale: %u, Binning: %u", startX, startY, endX, endY, offsetX, offsetY, totalX, totalY, outputX, outputY, scale, binning);
     sensor_t *s = esp_camera_sensor_get();
     int res = s->set_res_raw(s, startX, startY, endX, endY, offsetX, offsetY, totalX, totalY, outputX, outputY, scale, binning);
     if (res) {
@@ -1358,7 +1358,7 @@ void startCameraServer()
     // load ids from flash partition
     recognizer.set_ids_from_flash();
 #endif
-    ESP_LOGI(TAG, "Starting web server on port: '%d'", config.server_port);
+    // ESP_LOGI(TAG, "Starting web server on port: '%d'", config.server_port);
     if (httpd_start(&camera_httpd, &config) == ESP_OK)
     {
         httpd_register_uri_handler(camera_httpd, &index_uri);
@@ -1376,7 +1376,7 @@ void startCameraServer()
 
     config.server_port += 1;
     config.ctrl_port += 1;
-    ESP_LOGI(TAG, "Starting stream server on port: '%d'", config.server_port);
+    // ESP_LOGI(TAG, "Starting stream server on port: '%d'", config.server_port);
     if (httpd_start(&stream_httpd, &config) == ESP_OK)
     {
         httpd_register_uri_handler(stream_httpd, &stream_uri);

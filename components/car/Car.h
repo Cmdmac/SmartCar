@@ -1,9 +1,9 @@
 #ifndef CAR_H_
 #define CAR_H_
 // #include "Motor.h"
-#include <src/motor/Motor.h>
-#include <src/servo/Servo2.h>
-#include <src/ultrasound/UltraSound.h>
+#include "Motor.h"
+#include "Servo2.h"
+#include "UltraSound.h"
 
 class Car {
   private:                                                                                                                                         

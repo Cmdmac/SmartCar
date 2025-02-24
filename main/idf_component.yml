@@ -3,3 +3,4 @@ dependencies:
     pre_release: true
     version: '*'
   bblanchon/arduinojson: ^7.3.0
+  espressif/esp32-camera: ^2.0.15

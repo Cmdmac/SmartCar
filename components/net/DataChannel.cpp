@@ -16,7 +16,7 @@ void iBeaconTask() {
     vector<iBeacon> devices = finder.getDevices();
 
     Stark::Uri uri(WS_SERVER);
-    char buffer[10];
+    char buffer[32];
     
     uri.appendPath("locate");
 

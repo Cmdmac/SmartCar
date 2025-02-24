@@ -1,8 +1,8 @@
 #include "Car.h"
 #include <Arduino.h>
-#include "src/common/Command.h"
+#include "Command.h"
 
-Car::Car(Motor *l, Motor *r, /*Servo2 *s,*/ UltraSound *us) : l(l), r(r), /*s(s),*/ us(us), directValue(0), speed(0) {
+Car::Car(Motor *l, Motor *r, /*Servo2 *s,*/ UltraSound *us) : l(l), r(r), /*s(s),*/ us(us), speed(0), directValue(0) {
 
 }
 

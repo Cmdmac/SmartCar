@@ -5,12 +5,12 @@
 #include "net.h"
 
 Led led;
-// extern Net net;
+extern Net net;
 
 void setup() {
   Serial.begin(115200);
   Serial.println("setup");
-  // net.setUpWifi();
+  net.setUpWifi();
 }
 
 void loop() {

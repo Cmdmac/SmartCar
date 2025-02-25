@@ -21,16 +21,12 @@ static bool example_rmt_rx_done_callback(rmt_channel_handle_t channel, const rmt
     return high_task_wakeup == pdTRUE;
 }
 
-Ir::Ir() : rx_channel(NULL), tx_channel(NULL), mReceive_queue(NULL) {
+Ir::Ir() : tx_channel(NULL) {
   // irrecv.setTolerance(kTolerancePercentage);  // Override the default tolerance.
-
+  
 }
 
 Ir::~Ir() {
-  if (rx_channel != NULL) {
-    rmt_disable(rx_channel);
-    rmt_del_channel(rx_channel);
-  }
   if (tx_channel != NULL) {
     rmt_disable(tx_channel);
     rmt_del_channel(tx_channel);
@@ -98,27 +94,7 @@ void Ir::initTXChannel() {
 }
 
 void Ir::initRXChannel() {
-  ESP_LOGI(TAG, "create RMT RX channel");
-  rmt_rx_channel_config_t rx_channel_cfg = {
-      .gpio_num = IR_TX_GPIO_NUM,
-      .clk_src = RMT_CLK_SRC_DEFAULT,
-      .resolution_hz = IR_RESOLUTION_HZ,
-      .mem_block_symbols = 64, // amount of RMT symbols that the channel can store at a time
-  };
-  // rmt_channel_handle_t rx_channel = NULL;
-  ESP_ERROR_CHECK(rmt_new_rx_channel(&rx_channel_cfg, &rx_channel));
-
-  ESP_LOGI(TAG, "register RX done callback");
-  QueueHandle_t receive_queue = xQueueCreate(1, sizeof(rmt_rx_done_event_data_t));
-  assert(receive_queue);
-  rmt_rx_event_callbacks_t cbs = {
-      .on_recv_done = example_rmt_rx_done_callback,
-  };
-  mReceive_queue = receive_queue;
-  ESP_ERROR_CHECK(rmt_rx_register_event_callbacks(rx_channel, &cbs, receive_queue));
-
-  ESP_LOGI(TAG, "enable RMT RX channel");
-  ESP_ERROR_CHECK(rmt_enable(rx_channel));
+  
 }
 
 void Ir::startLearn() {
@@ -134,9 +110,9 @@ void Ir::startLearn() {
 //     int task_stack;             /*!< IR learn task stack size */
 //     int task_affinity;          /*!< IR learn task pinned to core (-1 is no affinity) */
 // } ir_learn_cfg_t;
-  if (rx_channel == NULL) {
-    initRXChannel();
-  }
+  // if (rx_channel == NULL) {
+  //   initRXChannel();
+  // }
   //运行在当前Core
   xTaskCreatePinnedToCore(&Ir::delegate, "IRLearnTask", 4096, this, 1, NULL, xPortGetCoreID());
 }
@@ -190,25 +166,43 @@ void Ir::send(rmt_rx_done_event_data_t data) {
 }
 
 void Ir::loop() {
+  ESP_LOGI(TAG, "create RMT RX channel");
+  rmt_rx_channel_config_t rx_channel_cfg = {
+      .gpio_num = IR_TX_GPIO_NUM,
+      .clk_src = RMT_CLK_SRC_DEFAULT,
+      .resolution_hz = IR_RESOLUTION_HZ,
+      .mem_block_symbols = 128, // amount of RMT symbols that the channel can store at a time
+  };
+  rmt_channel_handle_t rx_channel = NULL;
+  ESP_ERROR_CHECK(rmt_new_rx_channel(&rx_channel_cfg, &rx_channel));
+
+  ESP_LOGI(TAG, "register RX done callback");
+  QueueHandle_t receive_queue = xQueueCreate(1, sizeof(rmt_rx_done_event_data_t));
+  assert(receive_queue);
+  rmt_rx_event_callbacks_t cbs = {
+      .on_recv_done = example_rmt_rx_done_callback,
+  };
+  ESP_ERROR_CHECK(rmt_rx_register_event_callbacks(rx_channel, &cbs, receive_queue));
+
+  ESP_LOGI(TAG, "enable RMT RX channel");
+  ESP_ERROR_CHECK(rmt_enable(rx_channel));
+
   // the following timing requirement is based on NEC protocol
   rmt_receive_config_t receive_config = {
       .signal_range_min_ns = 1250,     // the shortest duration for NEC signal is 560us, 1250ns < 560us, valid signal won't be treated as noise
       .signal_range_max_ns = 12000000, // the longest duration for NEC signal is 9000us, 12000000ns > 9000us, the receive won't stop early
   };
   // save the received RMT symbols
-  rmt_symbol_word_t raw_symbols[64]; // 64 symbols should be sufficient for a standard NEC frame
+  rmt_symbol_word_t raw_symbols[128]; // 64 symbols should be sufficient for a standard NEC frame
   rmt_rx_done_event_data_t rx_data;
   // ready to receive
   ESP_ERROR_CHECK(rmt_receive(rx_channel, raw_symbols, sizeof(raw_symbols), &receive_config));
   while (1) {
-    if (mReceive_queue == NULL) {
-      break;
-    }
     // wait for RX done signal
-    if (xQueueReceive(mReceive_queue, &rx_data, pdMS_TO_TICKS(1000)) == pdPASS) {
+    if (xQueueReceive(receive_queue, &rx_data, pdMS_TO_TICKS(1000)) == pdPASS) {
         // parse the receive symbols and print the result
         // example_parse_nec_frame(rx_data.received_symbols, rx_data.num_symbols);
-        mIRDataList.push_back(rx_data);
+        addIrData(rx_data);
         // start receive again
         ESP_ERROR_CHECK(rmt_receive(rx_channel, raw_symbols, sizeof(raw_symbols), &receive_config));
     } else {
@@ -220,4 +214,6 @@ void Ir::loop() {
         // ESP_ERROR_CHECK(rmt_transmit(tx_channel, nec_encoder, &scan_code, sizeof(scan_code), &transmit_config));
     }
   }
+  rmt_disable(rx_channel);
+  rmt_del_channel(rx_channel);
 }

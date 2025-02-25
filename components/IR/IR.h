@@ -21,10 +21,10 @@ class Ir {
         ~Ir();
         static void delegate(void *pvParameters) {
           Ir* instance = static_cast<Ir*>(pvParameters);
-          while(1) {
+          // while(1) {
             instance->loop();
-            delay(1);
-          }
+          //   delay(1);
+          // }
         }
 
         void setup() {

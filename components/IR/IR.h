@@ -14,6 +14,7 @@
 class IR {
     public:
         IR();
+        ~IR();
         static void delegate(void *pvParameters) {
           IR* instance = static_cast<IR*>(pvParameters);
           while(1) {
@@ -30,9 +31,14 @@ class IR {
         void send();
     private:
       void loop();
+      void initRXChannel();
+      void initTXChannel();
       // void ir_learn_auto_learn_cb(ir_learn_state_t state, unsigned char sub_step, struct ir_learn_sub_list_head *data);
       // void ir_learn_save_result(struct ir_learn_sub_list_head *data_save, struct ir_learn_sub_list_head *data_src);
+      rmt_channel_handle_t rx_channel;
+      rmt_channel_handle_t tx_channel;
 
+      QueueHandle_t mReceive_queue;
 };
 
 #endif

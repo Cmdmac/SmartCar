@@ -4,6 +4,8 @@
 #include <assert.h>
 #include "ir_learn.h"
 #include "ir_encoder.h"
+#include <vector>
+using namespace std;
 
 #define IR_TX_GPIO_NUM                  GPIO_NUM_39
 #define IR_RX_GPIO_NUM                  GPIO_NUM_38
@@ -11,12 +13,12 @@
 
 #define IR_BUFFER_SIZE 1024
 
-class IR {
+class Ir {
     public:
-        IR();
-        ~IR();
+        Ir();
+        ~Ir();
         static void delegate(void *pvParameters) {
-          IR* instance = static_cast<IR*>(pvParameters);
+          Ir* instance = static_cast<Ir*>(pvParameters);
           while(1) {
             instance->loop();
             delay(1);
@@ -28,7 +30,8 @@ class IR {
         }
         void startLearn();
         void stopLearn();
-        void send();
+        void send(rmt_rx_done_event_data_t data);
+
     private:
       void loop();
       void initRXChannel();
@@ -39,6 +42,7 @@ class IR {
       rmt_channel_handle_t tx_channel;
 
       QueueHandle_t mReceive_queue;
+      vector<rmt_rx_done_event_data_t> mIRDataList;
 };
 
 #endif

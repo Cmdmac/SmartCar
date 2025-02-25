@@ -1,4 +1,4 @@
-#include "IR.h"
+#include "Ir.h"
 /* FreeRTOS includes */
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -21,12 +21,12 @@ static bool example_rmt_rx_done_callback(rmt_channel_handle_t channel, const rmt
     return high_task_wakeup == pdTRUE;
 }
 
-IR::IR() : rx_channel(NULL), tx_channel(NULL), mReceive_queue(NULL) {
+Ir::Ir() : rx_channel(NULL), tx_channel(NULL), mReceive_queue(NULL) {
   // irrecv.setTolerance(kTolerancePercentage);  // Override the default tolerance.
 
 }
 
-IR::~IR() {
+Ir::~Ir() {
   if (rx_channel != NULL) {
     rmt_disable(rx_channel);
     rmt_del_channel(rx_channel);
@@ -37,7 +37,7 @@ IR::~IR() {
   }
 }
 
-void IR::initTXChannel() {
+void Ir::initTXChannel() {
   ESP_LOGI(TAG, "create RMT TX channel");
 //   typedef struct {
 //     gpio_num_t gpio_num;        /*!< GPIO number used by RMT TX channel. Set to -1 if unused */
@@ -97,7 +97,7 @@ void IR::initTXChannel() {
   ESP_ERROR_CHECK(rmt_enable(tx_channel));
 }
 
-void IR::initRXChannel() {
+void Ir::initRXChannel() {
   ESP_LOGI(TAG, "create RMT RX channel");
   rmt_rx_channel_config_t rx_channel_cfg = {
       .gpio_num = IR_TX_GPIO_NUM,
@@ -121,7 +121,7 @@ void IR::initRXChannel() {
   ESP_ERROR_CHECK(rmt_enable(rx_channel));
 }
 
-void IR::startLearn() {
+void Ir::startLearn() {
 //   typedef struct {
 //     rmt_clock_source_t clk_src; /*!< RMT clock source */
 //     uint32_t resolution;        /*!< RMT resolution, in Hz */
@@ -138,14 +138,14 @@ void IR::startLearn() {
     initRXChannel();
   }
   //运行在当前Core
-  xTaskCreatePinnedToCore(&IR::delegate, "IRLearnTask", 4096, this, 1, NULL, xPortGetCoreID());
+  xTaskCreatePinnedToCore(&Ir::delegate, "IRLearnTask", 4096, this, 1, NULL, xPortGetCoreID());
 }
     
-void IR::stopLearn() {
+void Ir::stopLearn() {
 
 }
 
-void IR::send() {
+void Ir::send(rmt_rx_done_event_data_t data) {
   // void ir_learn_test_tx_raw(struct ir_learn_sub_list_head *rmt_out)
   // {
 //   typedef struct {
@@ -170,11 +170,26 @@ void IR::send() {
   }
     
   // }
+  rmt_symbol_word_t *rmt_symbols = data.received_symbols;
+  size_t symbol_num = data.num_symbols;
+
+  rmt_transmit_config_t transmit_cfg = {
+      .loop_count = 0, // no loop
+  };
+
+  ir_encoder_config_t raw_encoder_cfg = {
+      .resolution = IR_RESOLUTION_HZ,
+  };
+  rmt_encoder_handle_t raw_encoder = NULL;
+  ESP_ERROR_CHECK(ir_encoder_new(&raw_encoder_cfg, &raw_encoder));
+
+  ESP_ERROR_CHECK(rmt_transmit(tx_channel, raw_encoder, rmt_symbols, symbol_num, &transmit_cfg));
+  rmt_tx_wait_all_done(tx_channel, -1);
   // ESP_ERROR_CHECK(rmt_transmit(tx_channel, nec_encoder, &scan_code, sizeof(scan_code), &transmit_config));
 
 }
 
-void IR::loop() {
+void Ir::loop() {
   // the following timing requirement is based on NEC protocol
   rmt_receive_config_t receive_config = {
       .signal_range_min_ns = 1250,     // the shortest duration for NEC signal is 560us, 1250ns < 560us, valid signal won't be treated as noise
@@ -193,6 +208,7 @@ void IR::loop() {
     if (xQueueReceive(mReceive_queue, &rx_data, pdMS_TO_TICKS(1000)) == pdPASS) {
         // parse the receive symbols and print the result
         // example_parse_nec_frame(rx_data.received_symbols, rx_data.num_symbols);
+        mIRDataList.push_back(rx_data);
         // start receive again
         ESP_ERROR_CHECK(rmt_receive(rx_channel, raw_symbols, sizeof(raw_symbols), &receive_config));
     } else {

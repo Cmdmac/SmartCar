@@ -13,6 +13,8 @@ void setup() {
   Serial.println("setup");
   net.setUpWifi();
   ir.setup();
+  ir.initIrDatas();
+
   ir.startLearn();
 }
 

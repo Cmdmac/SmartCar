@@ -149,7 +149,7 @@ void Ir::stopLearn() {
 
 }
 
-void Ir::send(rmt_rx_done_event_data_t data) {
+void Ir::send(NecCode data) {
   // void ir_learn_test_tx_raw(struct ir_learn_sub_list_head *rmt_out)
   // {
 //   typedef struct {
@@ -210,8 +210,8 @@ void Ir::send(rmt_rx_done_event_data_t data) {
   ESP_LOGI(TAG, "enable RMT TX and RX channels");
   ESP_ERROR_CHECK(rmt_enable(tx_channel));
   const ir_nec_scan_code_t scan_code = {
-      .address = 0x7F80,
-      .command = 0xFE01,
+      .address = data.address,
+      .command = data.command,
   };
   ESP_ERROR_CHECK(rmt_transmit(tx_channel, nec_encoder, &scan_code, sizeof(scan_code), &transmit_config));
   rmt_tx_wait_all_done(tx_channel, -1);
@@ -259,7 +259,7 @@ void Ir::loop() {
         // parse the receive symbols and print the result
         // example_parse_nec_frame(rx_data.received_symbols, rx_data.num_symbols);
         parse_nec_frame(rx_data.received_symbols, rx_data.num_symbols);
-        printIrData(rx_data);
+        // printIrData(rx_data);
         // addIrData(rx_data);
         // send(rx_data);
         // printIrDatalist();

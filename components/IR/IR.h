@@ -52,25 +52,29 @@ class Ir {
       }
       void startLearn();
       void stopLearn();
-      void send(rmt_rx_done_event_data_t data);
+      void send(NecCode data);
 
       void initIrDatas() {
-        uint32_t list[34] = {2441814799,2183332448,2183332420,2184839726,2183332421,2184774190,2183332421,2183463491,2257322542,2255815262,
-                            2257257030,2255618658,2257388102,2257257032,2257257031,2257125963,2184774217,2257191470,2184839753,2184839726,
-                            2184905261,2184774190,2184905262,2184839725,2184839726,2183397956,2255618629,2255684192,2257257033,2255684192,2257322568,2255749727,2255684192,2147484233};
+        // uint32_t list[34] = {2441814799,2183332448,2183332420,2184839726,2183332421,2184774190,2183332421,2183463491,2257322542,2255815262,
+        //                     2257257030,2255618658,2257388102,2257257032,2257257031,2257125963,2184774217,2257191470,2184839753,2184839726,
+        //                     2184905261,2184774190,2184905262,2184839725,2184839726,2183397956,2255618629,2255684192,2257257033,2255684192,2257322568,2255749727,2255684192,2147484233};
 
-        rmt_rx_done_event_data_t data;
-        rmt_symbol_word_t symbols[34];
-        data.received_symbols = symbols;
-        for (size_t i = 0; i < 34; i++)
-        {
-          data.received_symbols[i].val = list[i];
-        }
+        // rmt_rx_done_event_data_t data;
+        // rmt_symbol_word_t symbols[34];
+        // data.received_symbols = symbols;
+        // for (size_t i = 0; i < 34; i++)
+        // {
+        //   data.received_symbols[i].val = list[i];
+        // }
         
-        data.num_symbols = 34;
-        delay(5 * 1000);
+        // data.num_symbols = 34;
+        delay(2 * 1000);
         Serial.println("send");
-        send(data);
+        NecCode code = {
+          .address = 0x7F80,
+          .command = 0xFE01,
+        };
+        send(code);
         // synmbol.num_symbols = sizeof(synmbol.received_symbols);
       }
 
@@ -83,24 +87,24 @@ class Ir {
       }
 
       void printIrDatalist() {
-        if (xSemaphoreTake(mIrDatalistMux, portMAX_DELAY) == pdTRUE) {
-          for (size_t i = 0; i < mIrDataList.size(); i++)
-          {
-            rmt_rx_done_event_data_t data = mIrDataList[i];
-            printIrData(data);
-          }          
-           // 释放互斥锁
-          xSemaphoreGive(mIrDatalistMux);
-        }
+        // if (xSemaphoreTake(mIrDatalistMux, portMAX_DELAY) == pdTRUE) {
+        //   for (size_t i = 0; i < mIrDataList.size(); i++)
+        //   {
+        //     rmt_rx_done_event_data_t data = mIrDataList[i];
+        //     printIrData(data);
+        //   }          
+        //    // 释放互斥锁
+        //   xSemaphoreGive(mIrDatalistMux);
+        // }
       }
     private:
       void loop();
       void initRXChannel();
       void initTXChannel();
-      void addIrData(rmt_rx_done_event_data_t data) {
+      void addIrData(NecCode data) {
         // 获取互斥锁
         if (xSemaphoreTake(mIrDatalistMux, portMAX_DELAY) == pdTRUE) {
-          mIrDataList.push_back(data);
+          mCodes.push_back(data);
            // 释放互斥锁
           xSemaphoreGive(mIrDatalistMux);
         }
@@ -141,7 +145,7 @@ class Ir {
       rmt_channel_handle_t tx_channel;
 
       SemaphoreHandle_t mIrDatalistMux;
-      vector<rmt_rx_done_event_data_t> mIrDataList;
+      // vector<rmt_rx_done_event_data_t> mIrDataList;
       vector<NecCode> mCodes;
       // uint16_t s_nec_code_address;
       // uint16_t s_nec_code_command;

@@ -36,13 +36,14 @@ void QMI8658::setUp() {
     i2c_conf.master.clk_speed = QMI_I2C_FREQ_HZ;
     i2c_param_config(I2C_NUM_0, &i2c_conf);
 
-    i2c_driver_install(I2C_NUM_0, i2c_conf.mode, 0, 0, 0);
+    ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, i2c_conf.mode, 0, 0, 0));
 
     uint8_t id = 0; // 芯片的ID号
 
     readRegister(QMI8658_WHO_AM_I, &id ,1); // 读芯片的ID号
     while (id != 0x05)  // 判断读到的ID号是否是0x05
     {
+        ESP_LOGI(TAG_QMI8658, "find id ");
         vTaskDelay(1000 / portTICK_PERIOD_MS);  // 延时1秒
         readRegister(QMI8658_WHO_AM_I, &id ,1); // 读取ID号
     }

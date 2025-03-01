@@ -61,7 +61,7 @@ void QMI8658::setUp() {
 // 读取QMI8658寄存器的值
 // esp_err_t QMI8658::readRegister(uint8_t reg_addr, uint8_t *data, size_t len)
 // {
-//     return i2c_master_write_read_device(I2C_NUM_0, QMI8658_SENSOR_ADDR,  &reg_addr, 1, data, len, 1000 / portTICK_PERIOD_MS);
+    // return i2c_master_write_read_device(I2C_NUM_0, QMI8658_SENSOR_ADDR,  &reg_addr, 1, data, len, 1000 / portTICK_PERIOD_MS);
 // }
 bool QMI8658::readRegister(uint8_t reg, uint8_t *value, int len) {
     _wire->beginTransmission(this->_addr);
@@ -69,16 +69,18 @@ bool QMI8658::readRegister(uint8_t reg, uint8_t *value, int len) {
     uint8_t ret = _wire->endTransmission(false);
     if (ret != 0) {
         // DEBUG_PRINTELN("PCA9557 write fail code " + String(ret));
+        ESP_LOGI("QMI8658", "QMI8658 read fail code %d ", ret);
         return false;
     }
 
     int n = _wire->requestFrom(this->_addr, (uint8_t) len);
     if (n != len) {
-        // DEBUG_PRINTELN("PCA9557 read fail");
+        ESP_LOGI("QMI8658", "readRegister requestFrom fail request %d but return %d", len, n);
         return false;
     }
-
-    *value = _wire->read();
+    for (int i = 0; i < n; i++) {
+        value[i] = _wire->read();// 读取一个字节的数据
+    }
 
     return true;
 }
@@ -96,7 +98,7 @@ bool QMI8658::writeRegister(uint8_t reg, uint8_t value) {
     _wire->write(value);
     uint8_t ret = _wire->endTransmission();
     if (ret != 0) {
-        // DEBUG_PRINTELN("PCA9557 write fail code " + String(ret));
+        ESP_LOGI("QMI8658", "QMI8658 write fail code %d ", ret);
         return false;
     }
 

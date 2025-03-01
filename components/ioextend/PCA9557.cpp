@@ -54,7 +54,6 @@ int PCA9557::digitalRead(int pin) {
     if (!this->read_register(INPUT_PORT_REGISTER, &input_reg_value)) {
         return LOW;
     }
-
     return bitRead(input_reg_value, pin) ? HIGH : LOW;
 }
 

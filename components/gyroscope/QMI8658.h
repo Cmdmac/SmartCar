@@ -8,6 +8,8 @@
 #include "freertos/task.h"
 #include "math.h"
 
+#include "Wire.h"
+
 /******************************************************************************/
 /***************************  I2C ↓ *******************************************/
 #define QMI_I2C_SDA           (GPIO_NUM_4)   // SDA引脚
@@ -111,14 +113,21 @@ class QMI8658
 {
 
     public:
+        QMI8658(int address = QMI8658_SENSOR_ADDR, TwoWire *bus = &Wire) {
+            this->_addr = address;
+            this->_wire = bus;
+        }
         void setUp();
         void readAccAndGry(QMI8658Data *p);
         void getAngleFromAcc(QMI8658Data *p);
 
     private:
-        esp_err_t readRegister(uint8_t reg_addr, uint8_t *data, size_t len);
-        esp_err_t writeRegister(uint8_t reg_addr, uint8_t data);
-
+        // esp_err_t readRegister(uint8_t reg_addr, uint8_t *data, size_t len);
+        // esp_err_t writeRegister(uint8_t reg_addr, uint8_t data);
+        bool readRegister(uint8_t reg, uint8_t *value, int len);
+        bool writeRegister(uint8_t reg, uint8_t value);
+        TwoWire *_wire;
+        uint8_t _addr;
 };
 
 

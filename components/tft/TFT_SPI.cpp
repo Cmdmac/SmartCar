@@ -108,12 +108,12 @@ bool TFT_SPI::init(void)
     if(ESP_OK != esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)BSP_LCD_SPI_NUM, &io_config, &io_handle)) {
         if (panel_handle) {
                 esp_lcd_panel_del(panel_handle);
-            }
-            if (io_handle) {
-                esp_lcd_panel_io_del(io_handle);
-            }
-            spi_bus_free(BSP_LCD_SPI_NUM);
         }
+        if (io_handle) {
+            esp_lcd_panel_io_del(io_handle);
+        }
+        spi_bus_free(BSP_LCD_SPI_NUM);
+        
         ESP_LOGI(TAG, "New panel IO failed");
         return false;
     }

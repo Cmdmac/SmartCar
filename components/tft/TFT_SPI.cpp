@@ -125,17 +125,19 @@ bool TFT_SPI::init(void)
         .bits_per_pixel = BSP_LCD_BITS_PER_PIXEL,
     };
     
-    // if (ESP_OK != esp_lcd_new_panel_gc9a01(io_handle, &panel_config, &panel_handle)) {
-    //     if (panel_handle) {
-    //         esp_lcd_panel_del(panel_handle);
-    //     }
-    //     if (io_handle) {
-    //         esp_lcd_panel_io_del(io_handle);
-    //     }
-    //     spi_bus_free(BSP_LCD_SPI_NUM);
-    //     ESP_LOGI(TAG, "New panel failed");
-    //     return false;
-    // }
+    #ifdef DRIVER_GC9A01
+        if (ESP_OK != esp_lcd_new_panel_gc9a01(io_handle, &panel_config, &panel_handle)) {
+            if (panel_handle) {
+                esp_lcd_panel_del(panel_handle);
+            }
+            if (io_handle) {
+                esp_lcd_panel_io_del(io_handle);
+            }
+            spi_bus_free(BSP_LCD_SPI_NUM);
+            ESP_LOGI(TAG, "New panel failed");
+            return false;
+        }
+    #endif
     
     esp_lcd_panel_reset(panel_handle);  // 液晶屏复位
     // lcd_cs(0);  // 拉低CS引脚

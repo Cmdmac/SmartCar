@@ -44,9 +44,6 @@ class TFT_SPI {
     private:
         bool init();
 
-        #ifdef DRIVER_GC9A01
-        bool initGC9A01();
-        #endif
         esp_err_t init_brightness();
         esp_err_t setBrightness(int brightness);
         esp_err_t turnOnBacklight();

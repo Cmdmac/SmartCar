@@ -9,7 +9,7 @@
 #include "PCA9557.h"
 #include "Camera.h"
 #include "TFT_SPI.h"
-
+#include "logo_en_240x240_lcd.h"
 // Led led;
 extern Net net;
 
@@ -33,6 +33,7 @@ void setup() {
   // camera.startStreamServer();
 
   tft.setup();
+  tft.drawPicture(0, 0, 240, 240, (const unsigned char *) logo_en_240x240_lcd);
   // qmi8658.setUp();
 
   // scanI2CDevices();

@@ -8,6 +8,7 @@
 #include "QMI8658.h"
 #include "PCA9557.h"
 #include "Camera.h"
+#include "TFT_SPI.h"
 
 // Led led;
 extern Net net;
@@ -18,6 +19,8 @@ PCA9557 io(0x19, &Wire); // 0x19 for iFarm4G board
 
 Camera camera;
 
+TFT_SPI tft;
+
 void setup() {
   Serial.begin(115200);
   Serial.println("setup");
@@ -26,9 +29,10 @@ void setup() {
   // ir.initIrDatas();
   // ir.startLearn();
   // Serial.println(Wire.begin(4, 5));
-  camera.setUp();
-  camera.startStreamServer();
+  // camera.setUp();
+  // camera.startStreamServer();
 
+  tft.setup();
   // qmi8658.setUp();
 
   // scanI2CDevices();

@@ -10,6 +10,7 @@
 #include "Camera.h"
 #include "TFT_SPI.h"
 #include "logo_en_240x240_lcd.h"
+#include "demos/lv_demos.h"
 // Led led;
 extern Net net;
 
@@ -33,7 +34,9 @@ void setup() {
   // camera.startStreamServer();
 
   tft.setup();
-  tft.drawPicture(0, 0, 240, 240, (const unsigned char *) logo_en_240x240_lcd);
+  // tft.drawPicture(0, 0, 240, 240, (const unsigned char *) logo_en_240x240_lcd);
+
+  lv_demo_benchmark(); 
   // qmi8658.setUp();
 
   // scanI2CDevices();

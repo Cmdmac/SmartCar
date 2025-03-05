@@ -35,6 +35,8 @@
 
 #define DRIVER_GC9A01
 
+#define BSP_LCD_DRAW_BUF_HEIGHT    (20)
+
 class TFT_SPI {
     public:
         void setup();

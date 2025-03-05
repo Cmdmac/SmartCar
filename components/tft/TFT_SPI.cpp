@@ -3,6 +3,9 @@
 #ifdef DRIVER_GC9A01
 #include "esp_lcd_gc9a01.h"
 #endif
+
+// #include "esp_lcd_touch_ft5x06.h"
+#include "esp_lvgl_port.h"
 /***********************************************************/
 /****************    LCD显示屏 ↓   *************************/
 
@@ -146,6 +149,32 @@ bool TFT_SPI::init(void)
     esp_lcd_panel_swap_xy(panel_handle, true);  // 显示翻转 
     esp_lcd_panel_mirror(panel_handle, true, false); // 镜像
 
+/* 液晶屏添加LVGL接口 */
+    /* 初始化LVGL */
+    lvgl_port_cfg_t lvgl_cfg = ESP_LVGL_PORT_INIT_CONFIG();
+    lvgl_port_init(&lvgl_cfg);
+    ESP_LOGD(TAG, "Add LCD screen");
+    const lvgl_port_display_cfg_t disp_cfg = {
+        .io_handle = io_handle,
+        .panel_handle = panel_handle,
+        .buffer_size = BSP_LCD_H_RES * BSP_LCD_DRAW_BUF_HEIGHT,   // LVGL缓存大小 
+        .double_buffer = false, // 是否开启双缓存
+        .hres = BSP_LCD_H_RES, // 液晶屏的宽
+        .vres = BSP_LCD_V_RES, // 液晶屏的高
+        .monochrome = false,  // 是否单色显示器
+        /* Rotation的值必须和液晶屏初始化里面设置的 翻转 和 镜像 一样 */
+        .rotation = {
+            .swap_xy = true,  // 是否翻转
+            .mirror_x = true, // x方向是否镜像
+            .mirror_y = false, // y方向是否镜像
+        },
+        .flags = {
+            .buff_dma = false,  // 是否使用DMA 注意：dma与spiram不能同时为true
+            .buff_spiram = true, // 是否使用PSRAM 注意：dma与spiram不能同时为true
+        }
+    };
+
+    lvgl_port_add_disp(&disp_cfg);
     return true;
 
 // err:

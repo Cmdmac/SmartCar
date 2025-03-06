@@ -13,6 +13,10 @@
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_panel_vendor.h"
 #include "esp_lcd_panel_ops.h"
+#include "esp_lvgl_port.h"
+
+#include "esp_lcd_touch_cst816s.h"
+
 
 /***********************************************************/
 /****************    LCD显示屏 ↓   *************************/
@@ -37,6 +41,9 @@
 
 #define BSP_LCD_DRAW_BUF_HEIGHT    (20)
 
+// #define BSP_I2C_NUM           (0)            // I2C外设
+
+
 class TFT_SPI {
     public:
         void setup();
@@ -46,6 +53,9 @@ class TFT_SPI {
     private:
         bool init();
 
+        lv_indev_t *initTouch(lv_disp_t *disp);
+        esp_err_t initTouchDriver(esp_lcd_touch_handle_t *ret_touch);
+
         esp_err_t init_brightness();
         esp_err_t setBrightness(int brightness);
         esp_err_t turnOnBacklight();
@@ -54,6 +64,7 @@ class TFT_SPI {
         esp_lcd_panel_io_spi_config_t createIoConfig();
 
         esp_lcd_panel_handle_t panel_handle = NULL;
+        esp_lcd_touch_handle_t tp;   // 触摸屏句柄
         
 };
 // esp_err_t bsp_display_brightness_init(void);

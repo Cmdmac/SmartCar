@@ -5,7 +5,6 @@
 #endif
 
 // #include "esp_lcd_touch_ft5x06.h"
-#include "esp_lvgl_port.h"
 /***********************************************************/
 /****************    LCD显示屏 ↓   *************************/
 
@@ -70,9 +69,29 @@ esp_err_t TFT_SPI::turnOnBacklight(void)
     return setBrightness(100);
 }
 
+#define BSP_I2C_NUM           I2C_NUM_0             // I2C外设
+#define BSP_I2C_FREQ_HZ       100000         // 100kHz
+
+esp_err_t bsp_i2c_init(void)
+{
+    i2c_config_t i2c_conf = {
+        .mode = I2C_MODE_MASTER,
+        .sda_io_num = 14,
+        .scl_io_num = 13,
+        .sda_pullup_en = GPIO_PULLUP_ENABLE,
+        .scl_pullup_en = GPIO_PULLUP_ENABLE,
+        // .clk_speed = BSP_I2C_FREQ_HZ
+    };
+    i2c_conf.master.clk_speed = BSP_I2C_FREQ_HZ;
+    i2c_param_config(BSP_I2C_NUM, &i2c_conf);
+
+    return i2c_driver_install(BSP_I2C_NUM, i2c_conf.mode, 0, 0, 0);
+}
+
 // 液晶屏初始化
 bool TFT_SPI::init(void)
 {
+    bsp_i2c_init();
     esp_lcd_panel_io_handle_t io_handle = NULL; 
     esp_err_t ret = ESP_OK;
     // 背光初始化
@@ -146,7 +165,7 @@ bool TFT_SPI::init(void)
     // lcd_cs(0);  // 拉低CS引脚
     esp_lcd_panel_init(panel_handle);  // 初始化配置寄存器
     esp_lcd_panel_invert_color(panel_handle, true); // 颜色反转
-    esp_lcd_panel_swap_xy(panel_handle, true);  // 显示翻转 
+    esp_lcd_panel_swap_xy(panel_handle, false);  // 显示翻转 
     esp_lcd_panel_mirror(panel_handle, true, false); // 镜像
 
 /* 液晶屏添加LVGL接口 */
@@ -164,7 +183,7 @@ bool TFT_SPI::init(void)
         .monochrome = false,  // 是否单色显示器
         /* Rotation的值必须和液晶屏初始化里面设置的 翻转 和 镜像 一样 */
         .rotation = {
-            .swap_xy = true,  // 是否翻转
+            .swap_xy = false,  // 是否翻转
             .mirror_x = true, // x方向是否镜像
             .mirror_y = false, // y方向是否镜像
         },
@@ -174,7 +193,10 @@ bool TFT_SPI::init(void)
         }
     };
 
-    lvgl_port_add_disp(&disp_cfg);
+    lv_disp_t *disp = lvgl_port_add_disp(&disp_cfg);
+
+    //初始化触摸屏
+    initTouch(disp);
     return true;
 
 // err:
@@ -186,6 +208,49 @@ bool TFT_SPI::init(void)
 //     }
 //     spi_bus_free(BSP_LCD_SPI_NUM);
     // return ret;
+}
+
+esp_err_t TFT_SPI::initTouchDriver(esp_lcd_touch_handle_t *ret_touch)
+{
+    /* Initialize touch */
+    esp_lcd_touch_config_t tp_cfg = {
+        .x_max = BSP_LCD_V_RES,
+        .y_max = BSP_LCD_H_RES,
+        .rst_gpio_num = GPIO_NUM_39, // Shared with LCD reset
+        .int_gpio_num = GPIO_NUM_40, 
+        .levels = {
+            .reset = 0,
+            .interrupt = 0,
+        },
+        .flags = {
+            .swap_xy = false,
+            .mirror_x = 1,
+            .mirror_y = 0,
+        },
+    };
+    esp_lcd_panel_io_handle_t tp_io_handle = NULL;
+    esp_lcd_panel_io_i2c_config_t tp_io_config = ESP_LCD_TOUCH_IO_I2C_CST816S_CONFIG();
+
+    ESP_RETURN_ON_ERROR(esp_lcd_new_panel_io_i2c((esp_lcd_i2c_bus_handle_t)BSP_I2C_NUM, &tp_io_config, &tp_io_handle), TAG, "esp_lcd_new_panel_io_i2c init failure");
+    ESP_ERROR_CHECK(esp_lcd_touch_new_i2c_cst816s(tp_io_handle, &tp_cfg, ret_touch));
+
+    return ESP_OK;
+}
+
+// 触摸屏初始化+添加LVGL接口
+lv_indev_t *TFT_SPI::initTouch(lv_disp_t *disp)
+{
+    /* 初始化触摸屏 */
+    ESP_ERROR_CHECK(initTouchDriver(&tp));
+    assert(tp);
+
+    /* 添加LVGL接口 */
+    const lvgl_port_touch_cfg_t touch_cfg = {
+        .disp = disp,
+        .handle = tp,
+    };
+
+    return lvgl_port_add_touch(&touch_cfg);
 }
 
 spi_bus_config_t TFT_SPI::createBusConfig() {
@@ -215,14 +280,12 @@ esp_lcd_panel_io_spi_config_t TFT_SPI::createIoConfig() {
 void TFT_SPI::setup(void)
 {
     esp_err_t ret = ESP_OK;
-    ESP_LOGI(TAG, "bsp_lcd_init");
-    
+    ESP_LOGI(TAG, "init tft lcd");    
     ret = init(); // 液晶屏驱动初始化
-    ESP_LOGI(TAG, "bsp_display_new");
-
+    ESP_LOGI(TAG, "turn on lcd");
     setBackgroundColor(0x0000); // 设置整屏背景黑色
     ret = esp_lcd_panel_disp_on_off(panel_handle, true); // 打开液晶屏显示
-    // ret = bsp_display_backlight_on(); // 打开背光显示
+    ret = turnOnBacklight(); // 打开背光显示
     // test_draw_bitmap(panel_handle);
 
     return;

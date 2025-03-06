@@ -22,6 +22,7 @@ Camera camera;
 
 TFT_SPI tft;
 
+
 void setup() {
   Serial.begin(115200);
   Serial.println("setup");
@@ -29,7 +30,7 @@ void setup() {
   // ir.setup();
   // ir.initIrDatas();
   // ir.startLearn();
-  // Serial.println(Wire.begin(4, 5));
+  // Serial.println(Wire.begin(14, 13));
   // camera.setUp();
   // camera.startStreamServer();
 

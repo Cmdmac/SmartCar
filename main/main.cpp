@@ -26,21 +26,22 @@ TFT_SPI tft;
 void setup() {
   Serial.begin(115200);
   Serial.println("setup");
-  net.setUpWifi();
+
+  // net.setUpWifi();
   // ir.setup();
   // ir.initIrDatas();
   // ir.startLearn();
-  // Serial.println(Wire.begin(14, 13));
   // camera.setUp();
-  // camera.startStreamServer();
-
+  // camera.startStreamServer(); 
+  // Serial.println(Wire.begin(14, 13));
+  // scanI2CDevices();
   tft.setup();
+
   // tft.drawPicture(0, 0, 240, 240, (const unsigned char *) logo_en_240x240_lcd);
 
   lv_demo_benchmark(); 
   // qmi8658.setUp();
 
-  // scanI2CDevices();
 
   // io.pinMode(0, OUTPUT);
   // io.pinMode(1, OUTPUT);

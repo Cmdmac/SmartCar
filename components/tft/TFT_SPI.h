@@ -37,7 +37,8 @@
 #define BSP_LCD_RST           (GPIO_NUM_7)
 #define BSP_LCD_BACKLIGHT     (GPIO_NUM_4)  
 
-#define DRIVER_GC9A01
+// #define DRIVER_GC9A01
+#define DRIVER_ST7789
 
 #define BSP_LCD_DRAW_BUF_HEIGHT    (20)
 

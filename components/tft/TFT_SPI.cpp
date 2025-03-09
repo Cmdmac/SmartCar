@@ -1,4 +1,5 @@
 #include "TFT_SPI.h"
+#include "driver/gpio.h"
 
 #ifdef DRIVER_GC9A01
 #include "esp_lcd_gc9a01.h"
@@ -78,8 +79,8 @@ esp_err_t bsp_i2c_init(void)
         .mode = I2C_MODE_MASTER,
         .sda_io_num = 14,
         .scl_io_num = 13,
-        .sda_pullup_en = GPIO_PULLUP_ENABLE,
-        .scl_pullup_en = GPIO_PULLUP_ENABLE,
+        .sda_pullup_en = GPIO_PULLUP_DISABLE,
+        .scl_pullup_en = GPIO_PULLUP_DISABLE,
         // .clk_speed = BSP_I2C_FREQ_HZ
     };
     i2c_conf.master.clk_speed = BSP_I2C_FREQ_HZ;
@@ -91,59 +92,44 @@ esp_err_t bsp_i2c_init(void)
 // 液晶屏初始化
 bool TFT_SPI::init(void)
 {
-    bsp_i2c_init();
-    esp_lcd_panel_io_handle_t io_handle = NULL; 
-    esp_err_t ret = ESP_OK;
-    // 背光初始化
-    if(ESP_OK != init_brightness()) {   
-        ESP_LOGI(TAG, "Brightness init failed");
-        return false;
-    }
-    // 初始化SPI总线
-    ESP_LOGD(TAG, "Initialize SPI bus");
-    // const spi_bus_config_t buscfg = {
-    //     .sclk_io_num = BSP_LCD_SPI_CLK,
-    //     .mosi_io_num = BSP_LCD_SPI_MOSI,
-    //     .miso_io_num = GPIO_NUM_NC,
-    //     .quadwp_io_num = GPIO_NUM_NC,
-    //     .quadhd_io_num = GPIO_NUM_NC,
-    //     .max_transfer_sz = BSP_LCD_H_RES * BSP_LCD_V_RES * sizeof(uint16_t),
-    // };
-    const spi_bus_config_t buscfg = createBusConfig();
-    if (ESP_OK != spi_bus_initialize(BSP_LCD_SPI_NUM, &buscfg, SPI_DMA_CH_AUTO)) {
-        ESP_LOGI(TAG, "SPI init failed");
-        return false;
-    }
-    // 液晶屏控制IO初始化
-    ESP_LOGD(TAG, "Install panel IO");
-    // const esp_lcd_panel_io_spi_config_t io_config = {
-    //     .dc_gpio_num = BSP_LCD_DC,
-    //     .cs_gpio_num = BSP_LCD_SPI_CS,
-    //     .pclk_hz = BSP_LCD_PIXEL_CLOCK_HZ,
-    //     .lcd_cmd_bits = LCD_CMD_BITS,
-    //     .lcd_param_bits = LCD_PARAM_BITS,
-    //     .spi_mode = 2,
-    //     .trans_queue_depth = 10,
-    // };
-        // esp_lcd_panel_io_handle_t io_handle = NULL;
-    const esp_lcd_panel_io_spi_config_t io_config = createIoConfig();
-    if(ESP_OK != esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)BSP_LCD_SPI_NUM, &io_config, &io_handle)) {
-        if (panel_handle) {
-                esp_lcd_panel_del(panel_handle);
-        }
-        if (io_handle) {
-            esp_lcd_panel_io_del(io_handle);
-        }
-        spi_bus_free(BSP_LCD_SPI_NUM);
-        
-        ESP_LOGI(TAG, "New panel IO failed");
-        return false;
-    }
-    // 初始化液晶屏驱动芯片ST7789
-    ESP_LOGD(TAG, "Install LCD driver");
-    const esp_lcd_panel_dev_config_t panel_config = {
+    gpio_config_t lcd_bl_io_conf = {
+        .pin_bit_mask = (1ULL << BSP_LCD_BACKLIGHT),  // Select the GPIO pin
+        .mode = GPIO_MODE_OUTPUT,            // Set as output mode
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE       // Disable interrupt
+    };
+    gpio_config(&lcd_bl_io_conf);
+    gpio_set_level((BSP_LCD_BACKLIGHT), 1);
+
+    spi_bus_config_t bus_conf = {
+        .mosi_io_num = BSP_LCD_SPI_MOSI,
+        .miso_io_num = GPIO_NUM_NC,
+        .sclk_io_num = BSP_LCD_SPI_CLK,
+        .quadwp_io_num = -1,
+        .quadhd_io_num = -1,
+        .max_transfer_sz = BSP_LCD_H_RES * BSP_LCD_V_RES * sizeof(uint16_t),
+    };
+    ESP_ERROR_CHECK(spi_bus_initialize(SPI2_HOST, &bus_conf, SPI_DMA_CH_AUTO));
+
+    ESP_LOGI(TAG, "Install panel IO");
+    esp_lcd_panel_io_handle_t io_handle = NULL;
+    esp_lcd_panel_io_spi_config_t io_config = {
+        .cs_gpio_num = BSP_LCD_SPI_CS,
+        .dc_gpio_num = BSP_LCD_DC,
+        .spi_mode = 0,
+        .pclk_hz = BSP_LCD_PIXEL_CLOCK_HZ,
+        .trans_queue_depth = 10,
+        .lcd_cmd_bits = LCD_CMD_BITS,
+        .lcd_param_bits = LCD_PARAM_BITS,
+    };
+    // Attach the LCD to the SPI bus
+    ESP_ERROR_CHECK(esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)SPI2_HOST, &io_config, &io_handle));
+
+    // ESP_LOGI(TAG, "Install ST7789 panel driver");
+    esp_lcd_panel_dev_config_t panel_config = {
         .reset_gpio_num = BSP_LCD_RST,
-        .rgb_ele_order = LCD_RGB_ELEMENT_ORDER_RGB,
+        .rgb_endian = LCD_RGB_ENDIAN_RGB,
         .bits_per_pixel = BSP_LCD_BITS_PER_PIXEL,
     };
     
@@ -160,13 +146,34 @@ bool TFT_SPI::init(void)
             return false;
         }
     #endif
-    
-    esp_lcd_panel_reset(panel_handle);  // 液晶屏复位
-    // lcd_cs(0);  // 拉低CS引脚
-    esp_lcd_panel_init(panel_handle);  // 初始化配置寄存器
-    esp_lcd_panel_invert_color(panel_handle, true); // 颜色反转
-    esp_lcd_panel_swap_xy(panel_handle, false);  // 显示翻转 
-    esp_lcd_panel_mirror(panel_handle, true, false); // 镜像
+
+    #ifdef DRIVER_ST7789
+        if (ESP_OK != esp_lcd_new_panel_st7789(io_handle, &panel_config, &panel_handle)) {
+            if (panel_handle) {
+                esp_lcd_panel_del(panel_handle);
+            }
+            if (io_handle) {
+                esp_lcd_panel_io_del(io_handle);
+            }
+            spi_bus_free(BSP_LCD_SPI_NUM);
+            ESP_LOGI(TAG, "New panel failed");
+            return false;
+        }
+    #endif
+    ESP_ERROR_CHECK(esp_lcd_panel_reset(panel_handle));
+    ESP_ERROR_CHECK(esp_lcd_panel_init(panel_handle));
+    esp_lcd_panel_invert_color(panel_handle, true);// Set inversion for esp32s3eye
+
+    // turn on display
+    esp_lcd_panel_disp_on_off(panel_handle, true);
+    // esp_lcd_panel_reset(panel_handle);  // 液晶屏复位
+    // esp_lcd_panel_init(panel_handle);  // 初始化配置寄存器
+    // esp_lcd_panel_invert_color(panel_handle, true); // 颜色反转
+    // esp_lcd_panel_swap_xy(panel_handle, false);  // 显示翻转 
+    // esp_lcd_panel_mirror(panel_handle, true, false); // 镜像
+
+    ESP_LOGI(TAG, "turn on lcd");
+    setBackgroundColor(0xFFFF); // 设置整屏背景黑色
 
 /* 液晶屏添加LVGL接口 */
     /* 初始化LVGL */
@@ -196,7 +203,7 @@ bool TFT_SPI::init(void)
     lv_disp_t *disp = lvgl_port_add_disp(&disp_cfg);
 
     //初始化触摸屏
-    initTouch(disp);
+    // initTouch(disp);
     return true;
 
 // err:
@@ -212,11 +219,39 @@ bool TFT_SPI::init(void)
 
 esp_err_t TFT_SPI::initTouchDriver(esp_lcd_touch_handle_t *ret_touch)
 {
+    /* Initilize I2C */
+    i2c_config_t i2c_conf = {
+        .mode = I2C_MODE_MASTER,
+        .sda_io_num = GPIO_NUM_14,
+        .scl_io_num = GPIO_NUM_13,
+        .sda_pullup_en = GPIO_PULLUP_ENABLE,
+        .scl_pullup_en = GPIO_PULLUP_ENABLE,
+        // .master.clk_speed = 400000
+    };
+    i2c_conf.master.clk_speed = 400000;
+
+    ESP_ERROR_CHECK(i2c_param_config(BSP_I2C_NUM, &i2c_conf));
+    ESP_ERROR_CHECK(i2c_driver_install(BSP_I2C_NUM, i2c_conf.mode, 0, 0, 0));
+
+    i2c_cmd_handle_t cmd;
+    for (int i = 0; i < 0x7f; i++)
+    {
+        cmd = i2c_cmd_link_create();
+        i2c_master_start(cmd);
+        i2c_master_write_byte(cmd, (i << 1) | I2C_MASTER_WRITE, true);
+        i2c_master_stop(cmd);
+        if (i2c_master_cmd_begin(BSP_I2C_NUM, cmd, portMAX_DELAY) == ESP_OK)
+        {
+            ESP_LOGW("I2C_TEST", "%02X", i);
+        }
+        i2c_cmd_link_delete(cmd);
+    }
+
     /* Initialize touch */
     esp_lcd_touch_config_t tp_cfg = {
         .x_max = BSP_LCD_V_RES,
         .y_max = BSP_LCD_H_RES,
-        .rst_gpio_num = GPIO_NUM_39, // Shared with LCD reset
+        .rst_gpio_num = GPIO_NUM_3, // Shared with LCD reset
         .int_gpio_num = GPIO_NUM_40, 
         .levels = {
             .reset = 0,
@@ -228,6 +263,7 @@ esp_err_t TFT_SPI::initTouchDriver(esp_lcd_touch_handle_t *ret_touch)
             .mirror_y = 0,
         },
     };
+    ESP_LOGE(TAG, "init touch");
     esp_lcd_panel_io_handle_t tp_io_handle = NULL;
     esp_lcd_panel_io_i2c_config_t tp_io_config = ESP_LCD_TOUCH_IO_I2C_CST816S_CONFIG();
 
@@ -242,7 +278,7 @@ lv_indev_t *TFT_SPI::initTouch(lv_disp_t *disp)
 {
     /* 初始化触摸屏 */
     ESP_ERROR_CHECK(initTouchDriver(&tp));
-    assert(tp);
+    // assert(tp);
 
     /* 添加LVGL接口 */
     const lvgl_port_touch_cfg_t touch_cfg = {
@@ -254,12 +290,23 @@ lv_indev_t *TFT_SPI::initTouch(lv_disp_t *disp)
 }
 
 spi_bus_config_t TFT_SPI::createBusConfig() {
-    spi_bus_config_t config;
+    spi_bus_config_t buscfg;
     #ifdef DRIVER_GC9A01
-        config =GC9A01_PANEL_BUS_SPI_CONFIG(BSP_LCD_SPI_CLK, BSP_LCD_SPI_MOSI,
+        buscfg =GC9A01_PANEL_BUS_SPI_CONFIG(BSP_LCD_SPI_CLK, BSP_LCD_SPI_MOSI,
                                     BSP_LCD_H_RES * 80 * BSP_LCD_V_RES / 8);
     #endif
-    return config;
+
+    #ifdef DRIVER_ST7789
+        buscfg = {
+            .mosi_io_num = BSP_LCD_SPI_MOSI,
+            .miso_io_num = BSP_LCD_DC,
+            .sclk_io_num = BSP_LCD_SPI_CLK,
+            .quadwp_io_num = GPIO_NUM_NC,
+            .quadhd_io_num = GPIO_NUM_NC,
+            .max_transfer_sz = BSP_LCD_H_RES * BSP_LCD_V_RES * sizeof(uint16_t),
+        };
+    #endif
+    return buscfg;
 }
 esp_lcd_panel_io_spi_config_t TFT_SPI::createIoConfig() {
     esp_lcd_panel_io_spi_config_t io_config;
@@ -267,6 +314,18 @@ esp_lcd_panel_io_spi_config_t TFT_SPI::createIoConfig() {
         io_config = GC9A01_PANEL_IO_SPI_CONFIG(BSP_LCD_SPI_CS, BSP_LCD_DC,
                 NULL, NULL);
     #endif        
+
+    #ifdef DRIVER_ST7789
+        io_config = {
+            .cs_gpio_num = BSP_LCD_SPI_CS,
+            .dc_gpio_num = BSP_LCD_DC,
+            .spi_mode = 2,
+            .pclk_hz = BSP_LCD_PIXEL_CLOCK_HZ,
+            .trans_queue_depth = 10,
+            .lcd_cmd_bits = LCD_CMD_BITS,
+            .lcd_param_bits = LCD_PARAM_BITS,
+        };
+    #endif
     return io_config;
 }
 
@@ -281,11 +340,8 @@ void TFT_SPI::setup(void)
 {
     esp_err_t ret = ESP_OK;
     ESP_LOGI(TAG, "init tft lcd");    
-    ret = init(); // 液晶屏驱动初始化
-    ESP_LOGI(TAG, "turn on lcd");
-    setBackgroundColor(0x0000); // 设置整屏背景黑色
-    ret = esp_lcd_panel_disp_on_off(panel_handle, true); // 打开液晶屏显示
-    ret = turnOnBacklight(); // 打开背光显示
+    ret = init(); // 液晶屏驱动初始
+    // ret = turnOnBacklight(); // 打开背光显示
     // test_draw_bitmap(panel_handle);
 
     return;

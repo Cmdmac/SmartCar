@@ -121,11 +121,10 @@ bool TFT_SPI::initLCD() {
     gpio_set_level((BSP_LCD_BACKLIGHT), 1);
 
 
-    #ifdef DRIVER_GC9A01
+    #if defined(DRIVER_GC9A01)
         buscfg =GC9A01_PANEL_BUS_SPI_CONFIG(BSP_LCD_SPI_CLK, BSP_LCD_SPI_MOSI,
                                     BSP_LCD_H_RES * 80 * BSP_LCD_V_RES / 8);
-    #endif
-    #ifdef DRIVER_ST7789
+    #elif defined(DRIVER_ST7789)
         spi_bus_config_t bus_conf = {
             .mosi_io_num = BSP_LCD_SPI_MOSI,
             .miso_io_num = GPIO_NUM_NC,
@@ -143,8 +142,7 @@ bool TFT_SPI::initLCD() {
     #ifdef DRIVER_GC9A01
         io_config = GC9A01_PANEL_IO_SPI_CONFIG(BSP_LCD_SPI_CS, BSP_LCD_DC,
                 NULL, NULL);
-    #endif   
-    #ifdef DRIVER_ST7789
+    #elif defined(DRIVER_ST7789)
         esp_lcd_panel_io_spi_config_t io_config = {
             .cs_gpio_num = BSP_LCD_SPI_CS,
             .dc_gpio_num = BSP_LCD_DC,
@@ -177,9 +175,7 @@ bool TFT_SPI::initLCD() {
             ESP_LOGI(TAG, "New panel failed");
             return false;
         }
-    #endif
-
-    #ifdef DRIVER_ST7789
+    #elif defined(DRIVER_ST7789)
         if (ESP_OK != esp_lcd_new_panel_st7789(io_handle, &panel_config, &panel_handle)) {
             if (panel_handle) {
                 esp_lcd_panel_del(panel_handle);

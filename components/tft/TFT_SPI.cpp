@@ -92,6 +92,24 @@ esp_err_t bsp_i2c_init(void)
 // 液晶屏初始化
 bool TFT_SPI::init(void)
 {
+    //初始化LCD
+    initLCD();
+    //初始化触摸屏
+    initLvgl();
+    return true;
+
+// err:
+//     if (panel_handle) {
+//         esp_lcd_panel_del(panel_handle);
+//     }
+//     if (io_handle) {
+//         esp_lcd_panel_io_del(io_handle);
+//     }
+//     spi_bus_free(BSP_LCD_SPI_NUM);
+    // return ret;
+}
+
+bool TFT_SPI::initLCD() {
     gpio_config_t lcd_bl_io_conf = {
         .pin_bit_mask = (1ULL << BSP_LCD_BACKLIGHT),  // Select the GPIO pin
         .mode = GPIO_MODE_OUTPUT,            // Set as output mode
@@ -113,7 +131,7 @@ bool TFT_SPI::init(void)
     ESP_ERROR_CHECK(spi_bus_initialize(SPI2_HOST, &bus_conf, SPI_DMA_CH_AUTO));
 
     ESP_LOGI(TAG, "Install panel IO");
-    esp_lcd_panel_io_handle_t io_handle = NULL;
+    // esp_lcd_panel_io_handle_t io_handle = NULL;
     esp_lcd_panel_io_spi_config_t io_config = {
         .cs_gpio_num = BSP_LCD_SPI_CS,
         .dc_gpio_num = BSP_LCD_DC,
@@ -174,8 +192,11 @@ bool TFT_SPI::init(void)
 
     ESP_LOGI(TAG, "turn on lcd");
     setBackgroundColor(0xFFFF); // 设置整屏背景黑色
+    return true;
+}
 
-/* 液晶屏添加LVGL接口 */
+bool TFT_SPI::initLvgl() {
+    /* 液晶屏添加LVGL接口 */
     /* 初始化LVGL */
     lvgl_port_cfg_t lvgl_cfg = ESP_LVGL_PORT_INIT_CONFIG();
     lvgl_port_init(&lvgl_cfg);
@@ -203,49 +224,34 @@ bool TFT_SPI::init(void)
     lv_disp_t *disp = lvgl_port_add_disp(&disp_cfg);
 
     //初始化触摸屏
-    // initTouch(disp);
-    return true;
-
-// err:
-//     if (panel_handle) {
-//         esp_lcd_panel_del(panel_handle);
-//     }
-//     if (io_handle) {
-//         esp_lcd_panel_io_del(io_handle);
-//     }
-//     spi_bus_free(BSP_LCD_SPI_NUM);
-    // return ret;
-}
-
-esp_err_t TFT_SPI::initTouchDriver(esp_lcd_touch_handle_t *ret_touch)
-{
     /* Initilize I2C */
-    i2c_config_t i2c_conf = {
-        .mode = I2C_MODE_MASTER,
-        .sda_io_num = GPIO_NUM_14,
-        .scl_io_num = GPIO_NUM_13,
-        .sda_pullup_en = GPIO_PULLUP_ENABLE,
-        .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        // .master.clk_speed = 400000
-    };
-    i2c_conf.master.clk_speed = 400000;
+    /**/
+    // i2c_config_t i2c_conf = {
+    //     .mode = I2C_MODE_MASTER,
+    //     .sda_io_num = GPIO_NUM_14,
+    //     .scl_io_num = GPIO_NUM_13,
+    //     .sda_pullup_en = GPIO_PULLUP_ENABLE,
+    //     .scl_pullup_en = GPIO_PULLUP_ENABLE,
+    //     // .master.clk_speed = 400000
+    // };
+    // i2c_conf.master.clk_speed = 400000;
 
-    ESP_ERROR_CHECK(i2c_param_config(BSP_I2C_NUM, &i2c_conf));
-    ESP_ERROR_CHECK(i2c_driver_install(BSP_I2C_NUM, i2c_conf.mode, 0, 0, 0));
+    // ESP_ERROR_CHECK(i2c_param_config(BSP_I2C_NUM, &i2c_conf));
+    // ESP_ERROR_CHECK(i2c_driver_install(BSP_I2C_NUM, i2c_conf.mode, 0, 0, 0));
 
-    i2c_cmd_handle_t cmd;
-    for (int i = 0; i < 0x7f; i++)
-    {
-        cmd = i2c_cmd_link_create();
-        i2c_master_start(cmd);
-        i2c_master_write_byte(cmd, (i << 1) | I2C_MASTER_WRITE, true);
-        i2c_master_stop(cmd);
-        if (i2c_master_cmd_begin(BSP_I2C_NUM, cmd, portMAX_DELAY) == ESP_OK)
-        {
-            ESP_LOGW("I2C_TEST", "%02X", i);
-        }
-        i2c_cmd_link_delete(cmd);
-    }
+    // i2c_cmd_handle_t cmd;
+    // for (int i = 0; i < 0x7f; i++)
+    // {
+    //     cmd = i2c_cmd_link_create();
+    //     i2c_master_start(cmd);
+    //     i2c_master_write_byte(cmd, (i << 1) | I2C_MASTER_WRITE, true);
+    //     i2c_master_stop(cmd);
+    //     if (i2c_master_cmd_begin(BSP_I2C_NUM, cmd, portMAX_DELAY) == ESP_OK)  
+    //     {
+    //         ESP_LOGW("I2C_TEST", "%02X", i);
+    //     }
+    //     i2c_cmd_link_delete(cmd);
+    // }
 
     /* Initialize touch */
     esp_lcd_touch_config_t tp_cfg = {
@@ -259,34 +265,27 @@ esp_err_t TFT_SPI::initTouchDriver(esp_lcd_touch_handle_t *ret_touch)
         },
         .flags = {
             .swap_xy = false,
-            .mirror_x = 1,
+            .mirror_x = 0,
             .mirror_y = 0,
         },
     };
     ESP_LOGE(TAG, "init touch");
     esp_lcd_panel_io_handle_t tp_io_handle = NULL;
     esp_lcd_panel_io_i2c_config_t tp_io_config = ESP_LCD_TOUCH_IO_I2C_CST816S_CONFIG();
+    
+    esp_lcd_touch_handle_t touch_handler = NULL;
 
     ESP_RETURN_ON_ERROR(esp_lcd_new_panel_io_i2c((esp_lcd_i2c_bus_handle_t)BSP_I2C_NUM, &tp_io_config, &tp_io_handle), TAG, "esp_lcd_new_panel_io_i2c init failure");
-    ESP_ERROR_CHECK(esp_lcd_touch_new_i2c_cst816s(tp_io_handle, &tp_cfg, ret_touch));
-
-    return ESP_OK;
-}
-
-// 触摸屏初始化+添加LVGL接口
-lv_indev_t *TFT_SPI::initTouch(lv_disp_t *disp)
-{
-    /* 初始化触摸屏 */
-    ESP_ERROR_CHECK(initTouchDriver(&tp));
-    // assert(tp);
+    ESP_ERROR_CHECK(esp_lcd_touch_new_i2c_cst816s(tp_io_handle, &tp_cfg, &touch_handler));
 
     /* 添加LVGL接口 */
     const lvgl_port_touch_cfg_t touch_cfg = {
         .disp = disp,
-        .handle = tp,
+        .handle = touch_handler,
     };
 
-    return lvgl_port_add_touch(&touch_cfg);
+    lvgl_port_add_touch(&touch_cfg);
+    return true;
 }
 
 spi_bus_config_t TFT_SPI::createBusConfig() {

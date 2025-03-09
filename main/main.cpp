@@ -33,15 +33,15 @@ void setup() {
   // ir.startLearn();
   // camera.setUp();
   // camera.startStreamServer(); 
-  // Serial.println(Wire.begin(14, 13));
-  // scanI2CDevices();
+  Serial.println(Wire.begin(14, 13));
+
   tft.setup();
 
   // tft.drawPicture(0, 0, 240, 240, (const unsigned char *) logo_en_240x240_lcd);
 
   lv_demo_benchmark(); 
   // qmi8658.setUp();
-
+  scanI2CDevices();
 
   // io.pinMode(0, OUTPUT);
   // io.pinMode(1, OUTPUT);

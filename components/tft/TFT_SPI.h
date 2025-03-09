@@ -53,9 +53,11 @@ class TFT_SPI {
 
     private:
         bool init();
+        bool initLCD();
+        bool initLvgl();
 
-        lv_indev_t *initTouch(lv_disp_t *disp);
-        esp_err_t initTouchDriver(esp_lcd_touch_handle_t *ret_touch);
+        // lv_indev_t *initTouch(lv_disp_t *disp);
+        // esp_err_t initTouchDriver(esp_lcd_touch_handle_t *ret_touch);
 
         esp_err_t init_brightness();
         esp_err_t setBrightness(int brightness);
@@ -65,7 +67,8 @@ class TFT_SPI {
         esp_lcd_panel_io_spi_config_t createIoConfig();
 
         esp_lcd_panel_handle_t panel_handle = NULL;
-        esp_lcd_touch_handle_t tp;   // 触摸屏句柄
+        esp_lcd_panel_io_handle_t io_handle = NULL;
+        // esp_lcd_touch_handle_t tp;   // 触摸屏句柄
         
 };
 // esp_err_t bsp_display_brightness_init(void);

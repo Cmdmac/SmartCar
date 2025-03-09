@@ -120,27 +120,41 @@ bool TFT_SPI::initLCD() {
     gpio_config(&lcd_bl_io_conf);
     gpio_set_level((BSP_LCD_BACKLIGHT), 1);
 
-    spi_bus_config_t bus_conf = {
-        .mosi_io_num = BSP_LCD_SPI_MOSI,
-        .miso_io_num = GPIO_NUM_NC,
-        .sclk_io_num = BSP_LCD_SPI_CLK,
-        .quadwp_io_num = -1,
-        .quadhd_io_num = -1,
-        .max_transfer_sz = BSP_LCD_H_RES * BSP_LCD_V_RES * sizeof(uint16_t),
-    };
+
+    #ifdef DRIVER_GC9A01
+        buscfg =GC9A01_PANEL_BUS_SPI_CONFIG(BSP_LCD_SPI_CLK, BSP_LCD_SPI_MOSI,
+                                    BSP_LCD_H_RES * 80 * BSP_LCD_V_RES / 8);
+    #endif
+    #ifdef DRIVER_ST7789
+        spi_bus_config_t bus_conf = {
+            .mosi_io_num = BSP_LCD_SPI_MOSI,
+            .miso_io_num = GPIO_NUM_NC,
+            .sclk_io_num = BSP_LCD_SPI_CLK,
+            .quadwp_io_num = -1,
+            .quadhd_io_num = -1,
+            .max_transfer_sz = BSP_LCD_H_RES * BSP_LCD_V_RES * sizeof(uint16_t),
+        };
+    #endif
+    
     ESP_ERROR_CHECK(spi_bus_initialize(SPI2_HOST, &bus_conf, SPI_DMA_CH_AUTO));
 
     ESP_LOGI(TAG, "Install panel IO");
     // esp_lcd_panel_io_handle_t io_handle = NULL;
-    esp_lcd_panel_io_spi_config_t io_config = {
-        .cs_gpio_num = BSP_LCD_SPI_CS,
-        .dc_gpio_num = BSP_LCD_DC,
-        .spi_mode = 0,
-        .pclk_hz = BSP_LCD_PIXEL_CLOCK_HZ,
-        .trans_queue_depth = 10,
-        .lcd_cmd_bits = LCD_CMD_BITS,
-        .lcd_param_bits = LCD_PARAM_BITS,
-    };
+    #ifdef DRIVER_GC9A01
+        io_config = GC9A01_PANEL_IO_SPI_CONFIG(BSP_LCD_SPI_CS, BSP_LCD_DC,
+                NULL, NULL);
+    #endif   
+    #ifdef DRIVER_ST7789
+        esp_lcd_panel_io_spi_config_t io_config = {
+            .cs_gpio_num = BSP_LCD_SPI_CS,
+            .dc_gpio_num = BSP_LCD_DC,
+            .spi_mode = 0,
+            .pclk_hz = BSP_LCD_PIXEL_CLOCK_HZ,
+            .trans_queue_depth = 10,
+            .lcd_cmd_bits = LCD_CMD_BITS,
+            .lcd_param_bits = LCD_PARAM_BITS,
+        };
+    #endif
     // Attach the LCD to the SPI bus
     ESP_ERROR_CHECK(esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)SPI2_HOST, &io_config, &io_handle));
 
@@ -287,52 +301,6 @@ bool TFT_SPI::initLvgl() {
     lvgl_port_add_touch(&touch_cfg);
     return true;
 }
-
-spi_bus_config_t TFT_SPI::createBusConfig() {
-    spi_bus_config_t buscfg;
-    #ifdef DRIVER_GC9A01
-        buscfg =GC9A01_PANEL_BUS_SPI_CONFIG(BSP_LCD_SPI_CLK, BSP_LCD_SPI_MOSI,
-                                    BSP_LCD_H_RES * 80 * BSP_LCD_V_RES / 8);
-    #endif
-
-    #ifdef DRIVER_ST7789
-        buscfg = {
-            .mosi_io_num = BSP_LCD_SPI_MOSI,
-            .miso_io_num = BSP_LCD_DC,
-            .sclk_io_num = BSP_LCD_SPI_CLK,
-            .quadwp_io_num = GPIO_NUM_NC,
-            .quadhd_io_num = GPIO_NUM_NC,
-            .max_transfer_sz = BSP_LCD_H_RES * BSP_LCD_V_RES * sizeof(uint16_t),
-        };
-    #endif
-    return buscfg;
-}
-esp_lcd_panel_io_spi_config_t TFT_SPI::createIoConfig() {
-    esp_lcd_panel_io_spi_config_t io_config;
-    #ifdef DRIVER_GC9A01
-        io_config = GC9A01_PANEL_IO_SPI_CONFIG(BSP_LCD_SPI_CS, BSP_LCD_DC,
-                NULL, NULL);
-    #endif        
-
-    #ifdef DRIVER_ST7789
-        io_config = {
-            .cs_gpio_num = BSP_LCD_SPI_CS,
-            .dc_gpio_num = BSP_LCD_DC,
-            .spi_mode = 2,
-            .pclk_hz = BSP_LCD_PIXEL_CLOCK_HZ,
-            .trans_queue_depth = 10,
-            .lcd_cmd_bits = LCD_CMD_BITS,
-            .lcd_param_bits = LCD_PARAM_BITS,
-        };
-    #endif
-    return io_config;
-}
-
-// #define DRIVER_GC9A01
-// bool TFT_SPI::initGC9A01() {
-
-// }
-// #endif
 
 // LCD显示初始化
 void TFT_SPI::setup(void)

@@ -63,8 +63,6 @@ class TFT_SPI {
         esp_err_t setBrightness(int brightness);
         esp_err_t turnOnBacklight();
         esp_err_t turnOffBacklight();
-        spi_bus_config_t createBusConfig();
-        esp_lcd_panel_io_spi_config_t createIoConfig();
 
         esp_lcd_panel_handle_t panel_handle = NULL;
         esp_lcd_panel_io_handle_t io_handle = NULL;

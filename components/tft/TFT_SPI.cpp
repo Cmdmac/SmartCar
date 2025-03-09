@@ -122,7 +122,7 @@ bool TFT_SPI::initLCD() {
 
 
     #if defined(DRIVER_GC9A01)
-        buscfg =GC9A01_PANEL_BUS_SPI_CONFIG(BSP_LCD_SPI_CLK, BSP_LCD_SPI_MOSI,
+        spi_bus_config_t bus_conf =GC9A01_PANEL_BUS_SPI_CONFIG(BSP_LCD_SPI_CLK, BSP_LCD_SPI_MOSI,
                                     BSP_LCD_H_RES * 80 * BSP_LCD_V_RES / 8);
     #elif defined(DRIVER_ST7789)
         spi_bus_config_t bus_conf = {
@@ -140,7 +140,7 @@ bool TFT_SPI::initLCD() {
     ESP_LOGI(TAG, "Install panel IO");
     // esp_lcd_panel_io_handle_t io_handle = NULL;
     #ifdef DRIVER_GC9A01
-        io_config = GC9A01_PANEL_IO_SPI_CONFIG(BSP_LCD_SPI_CS, BSP_LCD_DC,
+        esp_lcd_panel_io_spi_config_t io_config = GC9A01_PANEL_IO_SPI_CONFIG(BSP_LCD_SPI_CS, BSP_LCD_DC,
                 NULL, NULL);
     #elif defined(DRIVER_ST7789)
         esp_lcd_panel_io_spi_config_t io_config = {
@@ -222,7 +222,7 @@ bool TFT_SPI::initLvgl() {
         /* Rotation的值必须和液晶屏初始化里面设置的 翻转 和 镜像 一样 */
         .rotation = {
             .swap_xy = false,  // 是否翻转
-            .mirror_x = true, // x方向是否镜像
+            .mirror_x = false, // x方向是否镜像
             .mirror_y = false, // y方向是否镜像
         },
         .flags = {

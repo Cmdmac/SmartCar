@@ -9,7 +9,7 @@
 #include "esp_mn_speech_commands.h"
 #include "Mic.h"
 
-#define ADC_I2S_CHANNEL 4
+#define ADC_I2S_CHANNEL 2
 
 class Sr {
     public:

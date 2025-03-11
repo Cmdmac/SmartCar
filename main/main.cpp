@@ -11,6 +11,7 @@
 #include "TFT_SPI.h"
 #include "logo_en_240x240_lcd.h"
 #include "demos/lv_demos.h"
+#include "Sr.h"
 // Led led;
 extern Net net;
 
@@ -21,7 +22,7 @@ PCA9557 io(0x19, &Wire); // 0x19 for iFarm4G board
 Camera camera;
 
 TFT_SPI tft;
-
+Sr sr;
 
 void setup() {
   Serial.begin(115200);
@@ -35,11 +36,12 @@ void setup() {
   // camera.startStreamServer(); 
   Serial.println(Wire.begin(14, 13));
 
-  tft.setup();
+  // tft.setup();
+  sr.setup();
 
   // tft.drawPicture(0, 0, 240, 240, (const unsigned char *) logo_en_240x240_lcd);
 
-  lv_demo_benchmark(); 
+  // lv_demo_benchmark(); 
   // qmi8658.setUp();
   scanI2CDevices();
 

@@ -6,4 +6,4 @@
 
 idf_component_register(SRCS "Sr.cpp"
                        INCLUDE_DIRS "."
-                       REQUIRES arduino-esp32 esp-sr)
+                       REQUIRES arduino-esp32 esp-sr esp_codec_dev mic)

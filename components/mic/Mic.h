@@ -31,6 +31,7 @@ class Mic {
         
         void setup();
         void recordWav(int recordTime, MicCallback callback);
+        size_t read(char *buffer, size_t size);
 
         void loop();
     private:

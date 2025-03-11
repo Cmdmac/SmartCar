@@ -8,24 +8,26 @@
 #include "esp_process_sdkconfig.h"
 #include "esp_codec_dev.h"
 #include "esp_codec_dev_defaults.h"
+#include "esp_afe_config.h"
 // #include "audio_player.h"
 // #include "app_ui.h"
 
 static const char *TAG = "app_sr";
 
 
-int bsp_get_feed_channel(void)
+int Sr::get_feed_channel(void)
 {
     return ADC_I2S_CHANNEL;
 }
 
-esp_err_t bsp_get_feed_data(bool is_get_raw_channel, int16_t *buffer, int buffer_len)
+esp_err_t Sr::get_feed_data(bool is_get_raw_channel, int16_t *buffer, int buffer_len)
 {
     esp_err_t ret = ESP_OK;
     
     int audio_chunksize = buffer_len / (sizeof(int16_t) * ADC_I2S_CHANNEL);
 
-    ret = esp_codec_dev_read(record_dev_handle, (void *)buffer, buffer_len);
+    // ret = esp_codec_dev_read(record_dev_handle, (void *)buffer, buffer_len);
+    size_t len = mic.read(reinterpret_cast<char*>(buffer), buffer_len);
     
     if (!is_get_raw_channel) {
         for (int i = 0; i < audio_chunksize; i++) {
@@ -41,16 +43,16 @@ esp_err_t bsp_get_feed_data(bool is_get_raw_channel, int16_t *buffer, int buffer
 
 void Sr::feed_Task(void *arg)
 {
-    esp_afe_sr_data_t *afe_data = arg;  // 获取参数
+    esp_afe_sr_data_t *afe_data = (esp_afe_sr_data_t*)arg;  // 获取参数
     int audio_chunksize = afe_handle->get_feed_chunksize(afe_data); // 获取帧长度
     int nch = afe_handle->get_channel_num(afe_data); // 获取声道数
-    int feed_channel = bsp_get_feed_channel(); // 获取ADC输入通道数
+    int feed_channel = get_feed_channel(); // 获取ADC输入通道数
     assert(nch <= feed_channel);
-    int16_t *i2s_buff = heap_caps_malloc(audio_chunksize * sizeof(int16_t) * feed_channel, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM); // 分配获取I2S数据的缓存大小
+    int16_t *i2s_buff = (int16_t*)heap_caps_malloc(audio_chunksize * sizeof(int16_t) * feed_channel, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM); // 分配获取I2S数据的缓存大小
     assert(i2s_buff);
 
     while (task_flag) {
-        bsp_get_feed_data(false, i2s_buff, audio_chunksize * sizeof(int16_t) * feed_channel);  // 获取I2S数据
+        get_feed_data(false, i2s_buff, audio_chunksize * sizeof(int16_t) * feed_channel);  // 获取I2S数据
 
         afe_handle->feed(afe_data, i2s_buff); // 把获取到的I2S数据输入给afe_data
     }
@@ -63,7 +65,7 @@ void Sr::feed_Task(void *arg)
 
 void Sr::detect_Task(void *arg)
 {
-    esp_afe_sr_data_t *afe_data = arg;  // 接收参数
+    esp_afe_sr_data_t *afe_data = (esp_afe_sr_data_t*)arg;  // 接收参数
     int afe_chunksize = afe_handle->get_fetch_chunksize(afe_data);  // 获取fetch帧长度
     char *mn_name = esp_srmodel_filter(models, ESP_MN_PREFIX, ESP_MN_CHINESE); // 初始化命令词模型
     printf("multinet:%s\n", mn_name); // 打印命令词模型名称
@@ -167,6 +169,7 @@ void Sr::detect_Task(void *arg)
 
 void Sr::setup(void)
 {
+    mic.setup();
     models = esp_srmodel_init("model"); // 获取模型 名称“model”和分区表中装载模型的名称一致
 
     afe_handle = (esp_afe_sr_iface_t *)&ESP_AFE_SR_HANDLE;  // 先配置afe句柄 随后才可以调用afe接口

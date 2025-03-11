@@ -223,7 +223,7 @@ bool TFT_SPI::initLvgl() {
         .rotation = {
             .swap_xy = false,  // 是否翻转
             .mirror_x = false, // x方向是否镜像
-            .mirror_y = false, // y方向是否镜像
+            .mirror_y = true, // y方向是否镜像
         },
         .flags = {
             .buff_dma = false,  // 是否使用DMA 注意：dma与spiram不能同时为true
@@ -276,7 +276,7 @@ bool TFT_SPI::initLvgl() {
         .flags = {
             .swap_xy = false,
             .mirror_x = 0,
-            .mirror_y = 0,
+            .mirror_y = true,
         },
     };
     ESP_LOGE(TAG, "init touch");

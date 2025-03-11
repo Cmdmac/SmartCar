@@ -54,6 +54,10 @@ void Mic::recordWav(int recordTime, MicCallback callback)
   callback(wav_buffer, wav_size);
 }
 
+size_t Mic::read(char *buffer, size_t size) {
+  return i2s.readBytes(buffer, size);
+}
+
 void Mic::loop() {
 //   size_t bytesRead = 0;
 //   esp_err_t result = i2s_read(I2S_PORT, sBuffer, bufferLen * sizeof(int16_t), &bytesRead, portMAX_DELAY);

@@ -173,7 +173,36 @@ void Sr::setup(void)
     models = esp_srmodel_init("model"); // 获取模型 名称“model”和分区表中装载模型的名称一致
 
     afe_handle = (esp_afe_sr_iface_t *)&ESP_AFE_SR_HANDLE;  // 先配置afe句柄 随后才可以调用afe接口
-    afe_config_t afe_config = AFE_CONFIG_DEFAULT(); // 配置afe
+    afe_config_t afe_config =  { 
+        .aec_init = true, 
+        .se_init = true, 
+        .vad_init = true, 
+        .wakenet_init = true, 
+        .voice_communication_init = false, 
+        .voice_communication_agc_init = false, 
+        .voice_communication_agc_gain = 15, 
+        .vad_mode = VAD_MODE_3, 
+        .wakenet_model_name = NULL, 
+        .wakenet_model_name_2 = NULL, 
+        .wakenet_mode = DET_MODE_2CH_90, 
+        .afe_mode = SR_MODE_LOW_COST, 
+        .afe_perferred_core = 0, 
+        .afe_perferred_priority = 5, 
+        .afe_ringbuf_size = 50, 
+        .memory_alloc_mode = AFE_MEMORY_ALLOC_MORE_PSRAM, 
+        .afe_linear_gain = 1.0, 
+        .agc_mode = AFE_MN_PEAK_AGC_MODE_2, 
+        .pcm_config = {
+            .total_ch_num = 3, 
+            .mic_num = 2, 
+            .ref_num = 1, 
+            .sample_rate = 16000, 
+        },
+        .debug_init = false, 
+        .debug_hook = {{AFE_DEBUG_HOOK_MASE_TASK_IN, NULL}, {AFE_DEBUG_HOOK_FETCH_TASK_IN, NULL}}, 
+        .afe_ns_mode = NS_MODE_SSP, 
+        .afe_ns_model_name = NULL, 
+    }; // 配置afe
 
     afe_config.wakenet_model_name = esp_srmodel_filter(models, ESP_WN_PREFIX, NULL); // 配置唤醒模型 必须在create_from_config之前配置
     afe_data = afe_handle->create_from_config(&afe_config); // 创建afe_data

@@ -25,10 +25,9 @@ esp_err_t Sr::get_feed_data(bool is_get_raw_channel, int16_t *buffer, int buffer
     esp_err_t ret = ESP_OK;
     
     int audio_chunksize = buffer_len / (sizeof(int16_t) * ADC_I2S_CHANNEL);
-
     // ret = esp_codec_dev_read(record_dev_handle, (void *)buffer, buffer_len);
     size_t len = mic.read(reinterpret_cast<char*>(buffer), buffer_len);
-    
+    // ESP_LOGI(TAG, "mic read len=%d", len);
     if (!is_get_raw_channel) {
         for (int i = 0; i < audio_chunksize; i++) {
             int16_t ref = buffer[4 * i + 0];
@@ -47,15 +46,23 @@ void Sr::feed_Task(void *arg)
     int audio_chunksize = afe_handle->get_feed_chunksize(afe_data); // 获取帧长度
     int nch = afe_handle->get_channel_num(afe_data); // 获取声道数
     int feed_channel = get_feed_channel(); // 获取ADC输入通道数
+    ESP_LOGI(TAG, "nch=%d feed_channel=%d", nch, feed_channel);
     assert(nch <= feed_channel);
-    int16_t *i2s_buff = (int16_t*)heap_caps_malloc(audio_chunksize * sizeof(int16_t) * feed_channel, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM); // 分配获取I2S数据的缓存大小
+    int buffer_len = audio_chunksize * sizeof(int16_t) * feed_channel;
+    int16_t *i2s_buff = (int16_t *)malloc(audio_chunksize * sizeof(int16_t) * 3);//(int16_t*)heap_caps_malloc(audio_chunksize * sizeof(int16_t) * 3, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM); // 分配获取I2S数据的缓存大小
     assert(i2s_buff);
 
     while (task_flag) {
-        get_feed_data(false, i2s_buff, audio_chunksize * sizeof(int16_t) * feed_channel);  // 获取I2S数据
+        // get_feed_data(false, i2s_buff, bufferLen);  // 获取I2S数据
+        size_t len = mic.read(reinterpret_cast<char*>(i2s_buff), buffer_len);
+        for (int  i = audio_chunksize - 1; i >= 0; i--) {
+            i2s_buff[i * 2 + 1] = 0;
+            i2s_buff[i * 2 + 0] = i2s_buff[i];
+        }
 
         afe_handle->feed(afe_data, i2s_buff); // 把获取到的I2S数据输入给afe_data
     }
+    afe_handle->destroy(afe_data);
     if (i2s_buff) {
         free(i2s_buff);
         i2s_buff = NULL;
@@ -193,8 +200,8 @@ void Sr::setup(void)
         .afe_linear_gain = 1.0, 
         .agc_mode = AFE_MN_PEAK_AGC_MODE_2, 
         .pcm_config = {
-            .total_ch_num = 3, 
-            .mic_num = 2, 
+            .total_ch_num = 2, 
+            .mic_num = 1, 
             .ref_num = 1, 
             .sample_rate = 16000, 
         },

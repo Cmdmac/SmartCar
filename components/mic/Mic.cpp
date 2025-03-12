@@ -33,7 +33,7 @@ void Mic::setup() {
   i2s.setPins(I2S_IN_BCLK, I2S_IN_LRC, -1, I2S_IN_DIN);
 
   // 以 16 kHz 频率及 16 位深度单声道启动 I2S
-  if (!i2s.begin(I2S_MODE_STD, 16000, I2S_DATA_BIT_WIDTH_32BIT, I2S_SLOT_MODE_MONO, I2S_STD_SLOT_LEFT)) {
+  if (!i2s.begin(I2S_MODE_STD, SAMPLE_RATE, BIT_WIDTH, I2S_SLOT_MODE_MONO, I2S_STD_SLOT_LEFT)) {
     Serial.println("Failed to initialize I2S bus!");
     return;
   }

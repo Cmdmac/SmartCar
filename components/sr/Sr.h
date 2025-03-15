@@ -7,7 +7,8 @@
 #include "esp_mn_iface.h"
 #include "esp_mn_models.h"
 #include "esp_mn_speech_commands.h"
-#include "Mic.h"
+// #include "Mic.h"
+// #include "driver/i2s_std.h"
 
 #define ADC_I2S_CHANNEL 2
 
@@ -16,6 +17,7 @@ class Sr {
         void setup();
     
     private:
+      void init_i2s();
       int get_feed_channel(void);
       esp_err_t get_feed_data(bool is_get_raw_channel, int16_t *buffer, int buffer_len);
 
@@ -37,5 +39,7 @@ class Sr {
       int detect_flag = 0;
       volatile int task_flag = 0;
 
-      Mic mic;
+      // i2s_chan_handle_t rx_handle;
+
+      // Mic mic;
 };

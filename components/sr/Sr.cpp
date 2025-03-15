@@ -13,7 +13,37 @@
 // #include "app_ui.h"
 
 static const char *TAG = "app_sr";
+#include "driver/i2s.h"
+#define MAX98375_BCLK_IO1 5
+#define MAX98375_LRCLK_IO1 4
+#define MAX98375_DOUT_IO1 6
+// const char* host = "192.168.1.4"; // 电脑的IP地址
+// const int port = 8888; // 监听的端口
+#define bufferLen 512
 
+void Init_i2s(){
+    i2s_config_t i2s_config = {
+        .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),
+        .sample_rate = 16000,
+        .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
+        .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,
+        .communication_format = (i2s_comm_format_t)(I2S_COMM_FORMAT_STAND_I2S),
+        .intr_alloc_flags = 0,
+        .dma_buf_count = 8,
+        .dma_buf_len = bufferLen,
+        .use_apll = false          // 分配中断标志
+    };
+    ESP_ERROR_CHECK(i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL));
+    i2s_pin_config_t pin_config = {
+        .bck_io_num = MAX98375_BCLK_IO1,            // BCLK引脚号
+        .ws_io_num = MAX98375_LRCLK_IO1,             // LRCK引脚号
+        .data_out_num = -1, // DATA引脚号
+        .data_in_num = MAX98375_DOUT_IO1,           // DATA_IN引脚号
+    };
+    ESP_ERROR_CHECK(i2s_set_pin(I2S_NUM_0, &pin_config));
+  //   ESP_ERROR_CHECK(i2s_start(I2S_NUM_0));
+    
+  }
 
 int Sr::get_feed_channel(void)
 {
@@ -26,7 +56,7 @@ esp_err_t Sr::get_feed_data(bool is_get_raw_channel, int16_t *buffer, int buffer
     
     int audio_chunksize = buffer_len / (sizeof(int16_t) * ADC_I2S_CHANNEL);
     // ret = esp_codec_dev_read(record_dev_handle, (void *)buffer, buffer_len);
-    size_t len = mic.read(reinterpret_cast<char*>(buffer), buffer_len);
+    // size_t len = mic.read(reinterpret_cast<char*>(buffer), buffer_len);
     // ESP_LOGI(TAG, "mic read len=%d", len);
     if (!is_get_raw_channel) {
         for (int i = 0; i < audio_chunksize; i++) {
@@ -47,14 +77,18 @@ void Sr::feed_Task(void *arg)
     int nch = afe_handle->get_channel_num(afe_data); // 获取声道数
     int feed_channel = get_feed_channel(); // 获取ADC输入通道数
     ESP_LOGI(TAG, "nch=%d feed_channel=%d", nch, feed_channel);
-    assert(nch <= feed_channel);
+    // assert(nch <= feed_channel);
     int buffer_len = audio_chunksize * sizeof(int16_t) * feed_channel;
-    int16_t *i2s_buff = (int16_t *)malloc(audio_chunksize * sizeof(int16_t) * 3);//(int16_t*)heap_caps_malloc(audio_chunksize * sizeof(int16_t) * 3, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM); // 分配获取I2S数据的缓存大小
+    int16_t *i2s_buff = (int16_t *)malloc(buffer_len);//(int16_t*)heap_caps_malloc(audio_chunksize * sizeof(int16_t) * 3, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM); // 分配获取I2S数据的缓存大小
     assert(i2s_buff);
 
     while (task_flag) {
         // get_feed_data(false, i2s_buff, bufferLen);  // 获取I2S数据
-        size_t len = mic.read(reinterpret_cast<char*>(i2s_buff), buffer_len);
+        // size_t len = mic.read(reinterpret_cast<char*>(i2s_buff), buffer_len);
+        size_t bytes_read;
+        // i2s_channel_read(rx_handle, i2s_buff, buffer_len, &bytes_read, 100);
+        esp_err_t result = i2s_read(I2S_NUM_0, i2s_buff, buffer_len, &bytes_read, portMAX_DELAY);
+
         for (int  i = audio_chunksize - 1; i >= 0; i--) {
             i2s_buff[i * 2 + 1] = 0;
             i2s_buff[i * 2 + 0] = i2s_buff[i];
@@ -174,9 +208,62 @@ void Sr::detect_Task(void *arg)
     vTaskDelete(NULL);
 }
 
+
+//事件处理函数
+void Sr::init_i2s(){
+
+    // i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_AUTO, I2S_ROLE_MASTER);
+    // /* Allocate a new TX channel and get the handle of this channel */
+    // i2s_new_channel(&chan_cfg, NULL, &rx_handle);
+
+    // i2s_std_config_t std_cfg = {
+    //     .clk_cfg = I2S_STD_CLK_DEFAULT_CONFIG(16),
+    //     .slot_cfg = I2S_STD_MSB_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_MONO),
+    //     .gpio_cfg = {
+    //         .mclk = I2S_GPIO_UNUSED,
+    //         .bclk = GPIO_NUM_4,
+    //         .ws = GPIO_NUM_5,
+    //         .dout = GPIO_NUM_6,
+    //         .din = I2S_GPIO_UNUSED,
+    //         .invert_flags = {
+    //             .mclk_inv = false,
+    //             .bclk_inv = false,
+    //             .ws_inv = false,
+    //         },
+    //     },
+    // };
+    // i2s_channel_init_std_mode(rx_handle, &std_cfg);
+    // i2s_channel_enable(rx_handle);
+    
+    // i2s_config_t i2s_config = {
+    //     .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),
+    //     .sample_rate = 16000,
+    //     .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
+    //     .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,
+    //     .communication_format = (i2s_comm_format_t)(I2S_COMM_FORMAT_STAND_I2S),
+    //     .intr_alloc_flags = 0,
+    //     .dma_buf_count = 8,
+    //     .dma_buf_len = bufferLen,
+    //     .use_apll = false          // 分配中断标志
+    // };
+    // i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL);
+    // i2s_pin_config_t pin_config = {
+    //     .bck_io_num = MAX98375_BCLK_IO1,            // BCLK引脚号
+    //     .ws_io_num = MAX98375_LRCLK_IO1,             // LRCK引脚号
+    //     .data_out_num = -1, // DATA引脚号
+    //     .data_in_num = MAX98375_DOUT_IO1,           // DATA_IN引脚号
+    // };
+    // i2s_set_pin(I2S_NUM_0, &pin_config);
+    // i2s_start(I2S_NUM_0);
+    
+}
+
+
+
 void Sr::setup(void)
 {
-    mic.setup();
+    // mic.setup();
+    Init_i2s();
     models = esp_srmodel_init("model"); // 获取模型 名称“model”和分区表中装载模型的名称一致
 
     afe_handle = (esp_afe_sr_iface_t *)&ESP_AFE_SR_HANDLE;  // 先配置afe句柄 随后才可以调用afe接口
@@ -219,4 +306,3 @@ void Sr::setup(void)
     xTaskCreatePinnedToCore(&Sr::detectDelegate, "detect", 8 * 1024, (void*)this, 5, NULL, 1); 
     xTaskCreatePinnedToCore(&Sr::feedDelegate, "feed", 8 * 1024, (void*)this, 5, NULL, 0);
 }
-

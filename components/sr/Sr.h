@@ -10,7 +10,8 @@
 // #include "Mic.h"
 // #include "driver/i2s_std.h"
 
-#define ADC_I2S_CHANNEL 2
+// 麦克风通道数
+#define ADC_I2S_CHANNEL 1
 
 class Sr {
     public:

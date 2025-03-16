@@ -76,12 +76,13 @@ void Sr::feed_Task(void *arg)
 {
     esp_afe_sr_data_t *afe_data = (esp_afe_sr_data_t*)arg;  // 获取参数
     int audio_chunksize = afe_handle->get_feed_chunksize(afe_data); // 获取帧长度
+    int total_channel_num = afe_handle->get_total_channel_num(afe_data); //获取总共通道数，麦克风通道+参考通道
     int nch = afe_handle->get_channel_num(afe_data); // 获取声道数
-    int feed_channel = 1;//get_feed_channel(); // 获取ADC输入通道数
-    ESP_LOGI(TAG, "nch=%d feed_channel=%d", nch, feed_channel);
+    int feed_channel = get_feed_channel(); // 获取ADC输入通道数,对应麦克风有几路输入
+    ESP_LOGI(TAG, "total_channel_num=%d nch=%d feed_channel=%d", total_channel_num, nch, feed_channel);
     assert(nch <= feed_channel);
-    int buffer_len = audio_chunksize * sizeof(int16_t) * feed_channel;
-    int16_t *i2s_buff = (int16_t *)malloc(audio_chunksize * sizeof(int16_t) * 2);//(int16_t*)heap_caps_malloc(audio_chunksize * sizeof(int16_t) * 3, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM); // 分配获取I2S数据的缓存大小
+    //分配feed通道内存，通道数是total_channel_num
+    int16_t *i2s_buff = (int16_t*)heap_caps_malloc(audio_chunksize * sizeof(int16_t) * total_channel_num, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM); // 分配获取I2S数据的缓存大小
     assert(i2s_buff);
 
     // IPAddress remoteIP(192, 168, 2, 153);  // 替换为实际的目标IP地址
@@ -98,6 +99,7 @@ void Sr::feed_Task(void *arg)
         // i2s_channel_read(rx_handle, i2s_buff, buffer_len, &bytes_read, 100);
         esp_err_t result = i2s_read(I2S_NUM_0, i2s_buff, audio_chunksize * sizeof(int16_t), &bytes_read, portMAX_DELAY);
         // client.write((uint8_t*)i2s_buff, bytes_read);
+        //调整feed通道
         for (int  i = audio_chunksize - 1; i >= 0; i--) {
             i2s_buff[i * 2 + 1] = 0;
             i2s_buff[i * 2 + 0] = i2s_buff[i];

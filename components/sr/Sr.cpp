@@ -94,7 +94,7 @@ void Sr::feed_Task(void *arg)
     // }
     while (task_flag) {
         // get_feed_data(false, i2s_buff, bufferLen);  // 获取I2S数据
-        size_t len = mic.read(reinterpret_cast<char*>(i2s_buff), audio_chunksize * sizeof(int16_t));
+        size_t len = mic.read(reinterpret_cast<char*>(i2s_buff), audio_chunksize * sizeof(int16_t) * feed_channel);
         // i2s_channel_read(rx_handle, i2s_buff, buffer_len, &bytes_read, 100);
         // esp_err_t result = i2s_read(I2S_NUM_0, i2s_buff, audio_chunksize * sizeof(int16_t), &bytes_read, portMAX_DELAY);
         // client.write((uint8_t*)i2s_buff, bytes_read);
@@ -278,7 +278,7 @@ void Sr::setup(void)
 
     afe_handle = (esp_afe_sr_iface_t *)&ESP_AFE_SR_HANDLE;  // 先配置afe句柄 随后才可以调用afe接口
     afe_config_t afe_config =  { 
-        .aec_init = false, 
+        .aec_init = true, 
         .se_init = true, 
         .vad_init = true, 
         .wakenet_init = true, 
@@ -297,9 +297,13 @@ void Sr::setup(void)
         .afe_linear_gain = 1.0, 
         .agc_mode = AFE_MN_PEAK_AGC_MODE_2, 
         .pcm_config = {
+            //mic_num + ref_num
             .total_ch_num = 2, 
-            .mic_num = 1, 
+            //麦克风个数
+            .mic_num = 1,
+            //参考通道个数 
             .ref_num = 1, 
+            //采样率，必须为16000
             .sample_rate = 16000, 
         },
         .debug_init = false, 

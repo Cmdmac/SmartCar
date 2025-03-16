@@ -13,7 +13,7 @@
 // #include "app_ui.h"
 
 static const char *TAG = "app_sr";
-#include "driver/i2s.h"
+// #include "driver/i2s.h"
 #define MAX98375_BCLK_IO1 5
 #define MAX98375_LRCLK_IO1 4
 #define MAX98375_DOUT_IO1 6
@@ -23,29 +23,29 @@ static const char *TAG = "app_sr";
 
 #include "WiFiClient.h"
 
-void Init_i2s(){
-    i2s_config_t i2s_config = {
-        .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),
-        .sample_rate = 16000,
-        .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
-        .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,
-        .communication_format = (i2s_comm_format_t)(I2S_COMM_FORMAT_STAND_I2S),
-        .intr_alloc_flags = 0,
-        .dma_buf_count = 8,
-        .dma_buf_len = bufferLen,
-        .use_apll = false          // 分配中断标志
-    };
-    ESP_ERROR_CHECK(i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL));
-    i2s_pin_config_t pin_config = {
-        .bck_io_num = MAX98375_BCLK_IO1,            // BCLK引脚号
-        .ws_io_num = MAX98375_LRCLK_IO1,             // LRCK引脚号
-        .data_out_num = -1, // DATA引脚号
-        .data_in_num = MAX98375_DOUT_IO1,           // DATA_IN引脚号
-    };
-    ESP_ERROR_CHECK(i2s_set_pin(I2S_NUM_0, &pin_config));
-  //   ESP_ERROR_CHECK(i2s_start(I2S_NUM_0));
+// void Init_i2s(){
+//     i2s_config_t i2s_config = {
+//         .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),
+//         .sample_rate = 16000,
+//         .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
+//         .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,
+//         .communication_format = (i2s_comm_format_t)(I2S_COMM_FORMAT_STAND_I2S),
+//         .intr_alloc_flags = 0,
+//         .dma_buf_count = 8,
+//         .dma_buf_len = bufferLen,
+//         .use_apll = false          // 分配中断标志
+//     };
+//     ESP_ERROR_CHECK(i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL));
+//     i2s_pin_config_t pin_config = {
+//         .bck_io_num = MAX98375_BCLK_IO1,            // BCLK引脚号
+//         .ws_io_num = MAX98375_LRCLK_IO1,             // LRCK引脚号
+//         .data_out_num = -1, // DATA引脚号
+//         .data_in_num = MAX98375_DOUT_IO1,           // DATA_IN引脚号
+//     };
+//     ESP_ERROR_CHECK(i2s_set_pin(I2S_NUM_0, &pin_config));
+//   //   ESP_ERROR_CHECK(i2s_start(I2S_NUM_0));
     
-  }
+//   }
 
 int Sr::get_feed_channel(void)
 {
@@ -94,10 +94,9 @@ void Sr::feed_Task(void *arg)
     // }
     while (task_flag) {
         // get_feed_data(false, i2s_buff, bufferLen);  // 获取I2S数据
-        // size_t len = mic.read(reinterpret_cast<char*>(i2s_buff), buffer_len);
-        size_t bytes_read;
+        size_t len = mic.read(reinterpret_cast<char*>(i2s_buff), audio_chunksize * sizeof(int16_t));
         // i2s_channel_read(rx_handle, i2s_buff, buffer_len, &bytes_read, 100);
-        esp_err_t result = i2s_read(I2S_NUM_0, i2s_buff, audio_chunksize * sizeof(int16_t), &bytes_read, portMAX_DELAY);
+        // esp_err_t result = i2s_read(I2S_NUM_0, i2s_buff, audio_chunksize * sizeof(int16_t), &bytes_read, portMAX_DELAY);
         // client.write((uint8_t*)i2s_buff, bytes_read);
         //调整feed通道
         for (int  i = audio_chunksize - 1; i >= 0; i--) {
@@ -274,8 +273,7 @@ void Sr::init_i2s(){
 
 void Sr::setup(void)
 {
-    // mic.setup();
-    Init_i2s();
+    mic.setup(16000, I2S_DATA_BIT_WIDTH_16BIT);
     models = esp_srmodel_init("model"); // 获取模型 名称“model”和分区表中装载模型的名称一致
 
     afe_handle = (esp_afe_sr_iface_t *)&ESP_AFE_SR_HANDLE;  // 先配置afe句柄 随后才可以调用afe接口

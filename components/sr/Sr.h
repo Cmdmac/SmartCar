@@ -7,7 +7,7 @@
 #include "esp_mn_iface.h"
 #include "esp_mn_models.h"
 #include "esp_mn_speech_commands.h"
-// #include "Mic.h"
+#include "Mic.h"
 // #include "driver/i2s_std.h"
 
 // 麦克风通道数
@@ -42,5 +42,5 @@ class Sr {
 
       // i2s_chan_handle_t rx_handle;
 
-      // Mic mic;
+      Mic mic;
 };

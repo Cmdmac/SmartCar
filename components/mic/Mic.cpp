@@ -24,21 +24,26 @@ static void i2s_event_handler(void* arg, esp_event_base_t event_base, int32_t ev
     }
 }
 */
-void Mic::setup() {
+
+void Mic::setup(int pin_bclk, int pin_lrc, int pin_din, int sampleRate, i2s_data_bit_width_t bit_width) {
   Serial.println("AudioRecorder Setup I2S...");
   
   Serial.println("正在初始化 I2S 总线...");
   // 设置用于音频输入的引脚
   // Set up the pins used for audio input
-  i2s.setPins(I2S_IN_BCLK, I2S_IN_LRC, -1, I2S_IN_DIN);
+  i2s.setPins(pin_bclk, pin_lrc, -1, pin_din);
 
-  // 以 16 kHz 频率及 16 位深度单声道启动 I2S
-  if (!i2s.begin(I2S_MODE_STD, SAMPLE_RATE, BIT_WIDTH, I2S_SLOT_MODE_MONO, I2S_STD_SLOT_LEFT)) {
+  //单声道
+  if (!i2s.begin(I2S_MODE_STD, sampleRate, bit_width, I2S_SLOT_MODE_MONO, I2S_STD_SLOT_LEFT)) {
     Serial.println("Failed to initialize I2S bus!");
     return;
   }
 
   Serial.println("I2S 总线已初始化。");
+}
+
+void Mic::setup(int sampleRate, i2s_data_bit_width_t bit_width) {
+  this->setup(I2S_IN_BCLK, I2S_IN_LRC, I2S_IN_DIN, sampleRate, bit_width);
 }
 
 void Mic::recordWav(int recordTime, MicCallback callback)

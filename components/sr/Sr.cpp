@@ -21,6 +21,8 @@ static const char *TAG = "app_sr";
 // const int port = 8888; // 监听的端口
 #define bufferLen 512
 
+#include "WiFiClient.h"
+
 void Init_i2s(){
     i2s_config_t i2s_config = {
         .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),
@@ -75,20 +77,27 @@ void Sr::feed_Task(void *arg)
     esp_afe_sr_data_t *afe_data = (esp_afe_sr_data_t*)arg;  // 获取参数
     int audio_chunksize = afe_handle->get_feed_chunksize(afe_data); // 获取帧长度
     int nch = afe_handle->get_channel_num(afe_data); // 获取声道数
-    int feed_channel = get_feed_channel(); // 获取ADC输入通道数
+    int feed_channel = 1;//get_feed_channel(); // 获取ADC输入通道数
     ESP_LOGI(TAG, "nch=%d feed_channel=%d", nch, feed_channel);
-    // assert(nch <= feed_channel);
+    assert(nch <= feed_channel);
     int buffer_len = audio_chunksize * sizeof(int16_t) * feed_channel;
-    int16_t *i2s_buff = (int16_t *)malloc(buffer_len);//(int16_t*)heap_caps_malloc(audio_chunksize * sizeof(int16_t) * 3, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM); // 分配获取I2S数据的缓存大小
+    int16_t *i2s_buff = (int16_t *)malloc(audio_chunksize * sizeof(int16_t) * 2);//(int16_t*)heap_caps_malloc(audio_chunksize * sizeof(int16_t) * 3, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM); // 分配获取I2S数据的缓存大小
     assert(i2s_buff);
 
+    // IPAddress remoteIP(192, 168, 2, 153);  // 替换为实际的目标IP地址
+    // WiFiClient client;
+    // if (!client.connect(remoteIP, 8888)) {
+    //     vTaskDelete(NULL);
+    //     ESP_LOGW(TAG, "connect webserver failure");
+    //     return;
+    // }
     while (task_flag) {
         // get_feed_data(false, i2s_buff, bufferLen);  // 获取I2S数据
         // size_t len = mic.read(reinterpret_cast<char*>(i2s_buff), buffer_len);
         size_t bytes_read;
         // i2s_channel_read(rx_handle, i2s_buff, buffer_len, &bytes_read, 100);
-        esp_err_t result = i2s_read(I2S_NUM_0, i2s_buff, buffer_len, &bytes_read, portMAX_DELAY);
-
+        esp_err_t result = i2s_read(I2S_NUM_0, i2s_buff, audio_chunksize * sizeof(int16_t), &bytes_read, portMAX_DELAY);
+        // client.write((uint8_t*)i2s_buff, bytes_read);
         for (int  i = audio_chunksize - 1; i >= 0; i--) {
             i2s_buff[i * 2 + 1] = 0;
             i2s_buff[i * 2 + 0] = i2s_buff[i];
@@ -130,6 +139,7 @@ void Sr::detect_Task(void *arg)
 
     while (task_flag) {
         afe_fetch_result_t* res = afe_handle->fetch(afe_data); // 获取模型输出结果
+        // ESP_LOGW(TAG, "ret_value=%d", res->ret_value);
         if (!res || res->ret_value == ESP_FAIL) {
             printf("fetch error!\n");
             break;
@@ -268,7 +278,7 @@ void Sr::setup(void)
 
     afe_handle = (esp_afe_sr_iface_t *)&ESP_AFE_SR_HANDLE;  // 先配置afe句柄 随后才可以调用afe接口
     afe_config_t afe_config =  { 
-        .aec_init = true, 
+        .aec_init = false, 
         .se_init = true, 
         .vad_init = true, 
         .wakenet_init = true, 

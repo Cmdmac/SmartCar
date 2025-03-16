@@ -112,7 +112,7 @@ void setup() {
   Serial.println("setup");
   // Init_i2s();
 
-  // net.setUpWifi();
+  net.setUpWifi();
   // 启动UDP
   // xTaskCreate(udp_client_task, "udp_client", 4096, NULL, 5, &client_task_handle);
   // ir.setup();

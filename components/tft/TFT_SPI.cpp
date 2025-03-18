@@ -73,21 +73,21 @@ esp_err_t TFT_SPI::turnOnBacklight(void)
 #define BSP_I2C_NUM           I2C_NUM_0             // I2C外设
 #define BSP_I2C_FREQ_HZ       100000         // 100kHz
 
-esp_err_t bsp_i2c_init(void)
-{
-    i2c_config_t i2c_conf = {
-        .mode = I2C_MODE_MASTER,
-        .sda_io_num = 14,
-        .scl_io_num = 13,
-        .sda_pullup_en = GPIO_PULLUP_DISABLE,
-        .scl_pullup_en = GPIO_PULLUP_DISABLE,
-        // .clk_speed = BSP_I2C_FREQ_HZ
-    };
-    i2c_conf.master.clk_speed = BSP_I2C_FREQ_HZ;
-    i2c_param_config(BSP_I2C_NUM, &i2c_conf);
+// esp_err_t bsp_i2c_init(void)
+// {
+//     i2c_config_t i2c_conf = {
+//         .mode = I2C_MODE_MASTER,
+//         .sda_io_num = 14,
+//         .scl_io_num = 13,
+//         .sda_pullup_en = GPIO_PULLUP_DISABLE,
+//         .scl_pullup_en = GPIO_PULLUP_DISABLE,
+//         // .clk_speed = BSP_I2C_FREQ_HZ
+//     };
+//     i2c_conf.master.clk_speed = BSP_I2C_FREQ_HZ;
+//     i2c_param_config(BSP_I2C_NUM, &i2c_conf);
 
-    return i2c_driver_install(BSP_I2C_NUM, i2c_conf.mode, 0, 0, 0);
-}
+//     return i2c_driver_install(BSP_I2C_NUM, i2c_conf.mode, 0, 0, 0);
+// }
 
 // 液晶屏初始化
 bool TFT_SPI::init(void)
@@ -263,6 +263,11 @@ bool TFT_SPI::initLvgl() {
     //     i2c_cmd_link_delete(cmd);
     // }
 
+    // initTouch(disp);
+    return true;
+}
+
+bool TFT_SPI::initTouch(lv_disp_t* disp) {
     /* Initialize touch */
     esp_lcd_touch_config_t tp_cfg = {
         .x_max = BSP_LCD_V_RES,
@@ -282,7 +287,7 @@ bool TFT_SPI::initLvgl() {
     ESP_LOGE(TAG, "init touch");
     esp_lcd_panel_io_handle_t tp_io_handle = NULL;
     esp_lcd_panel_io_i2c_config_t tp_io_config = ESP_LCD_TOUCH_IO_I2C_CST816S_CONFIG();
-    
+
     esp_lcd_touch_handle_t touch_handler = NULL;
 
     ESP_RETURN_ON_ERROR(esp_lcd_new_panel_io_i2c((esp_lcd_i2c_bus_handle_t)BSP_I2C_NUM, &tp_io_config, &tp_io_handle), TAG, "esp_lcd_new_panel_io_i2c init failure");

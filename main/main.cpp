@@ -39,7 +39,7 @@ void setup() {
   Serial.println("setup");
   // Init_i2s();
 
-  net.setUpWifi();
+  // net.setUpWifi();
   // 启动UDP
   // xTaskCreate(udp_client_task, "udp_client", 4096, NULL, 5, &client_task_handle);
   // ir.setup();
@@ -49,8 +49,8 @@ void setup() {
   // camera.startStreamServer(); 
 //   Serial.println(Wire.begin(14, 13));
 
-  // tft.setup();
-  sr.setup();
+  tft.setup();
+  // sr.setup();
 
   // tft.drawPicture(0, 0, 240, 240, (const unsigned char *) logo_en_240x240_lcd);
 

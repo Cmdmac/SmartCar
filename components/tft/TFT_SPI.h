@@ -30,15 +30,22 @@
 #define BSP_LCD_H_RES              (240)
 #define BSP_LCD_V_RES              (240)
 
-#define BSP_LCD_SPI_MOSI      (GPIO_NUM_15)
-#define BSP_LCD_SPI_CLK       (GPIO_NUM_16)
-#define BSP_LCD_SPI_CS        (GPIO_NUM_5)
-#define BSP_LCD_DC            (GPIO_NUM_6)
-#define BSP_LCD_RST           (GPIO_NUM_7)
-#define BSP_LCD_BACKLIGHT     (GPIO_NUM_4)  
+// #define BSP_LCD_SPI_MOSI      (GPIO_NUM_15)
+// #define BSP_LCD_SPI_CLK       (GPIO_NUM_16)
+// #define BSP_LCD_SPI_CS        (GPIO_NUM_5)
+// #define BSP_LCD_DC            (GPIO_NUM_6)
+// #define BSP_LCD_RST           (GPIO_NUM_7)
+// #define BSP_LCD_BACKLIGHT     (GPIO_NUM_4)  
 
-#define DRIVER_GC9A01
-// #define DRIVER_ST7789
+#define BSP_LCD_SPI_MOSI      (GPIO_NUM_20)
+#define BSP_LCD_SPI_CLK       (GPIO_NUM_14)
+#define BSP_LCD_SPI_CS        (GPIO_NUM_21)
+#define BSP_LCD_DC            (GPIO_NUM_47)
+#define BSP_LCD_RST           (GPIO_NUM_3)
+#define BSP_LCD_BACKLIGHT     (GPIO_NUM_48)  
+
+// #define DRIVER_GC9A01
+#define DRIVER_ST7789
 
 #define BSP_LCD_DRAW_BUF_HEIGHT    (20)
 
@@ -55,6 +62,7 @@ class TFT_SPI {
         bool init();
         bool initLCD();
         bool initLvgl();
+        bool initTouch(lv_disp_t*);
 
         // lv_indev_t *initTouch(lv_disp_t *disp);
         // esp_err_t initTouchDriver(esp_lcd_touch_handle_t *ret_touch);

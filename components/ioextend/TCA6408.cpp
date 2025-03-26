@@ -122,11 +122,8 @@ void TCA6408::attachInterrupt(uint8_t interrupt_pin, voidFuncPtr callback)
 
 bool TCA6408::digitalWrite(Pin pin, int value) {
     // 读取当前输出端口状态
-    Wire.beginTransmission(device_address_);
-    Wire.write(OUTPUT_PORT);
-    Wire.endTransmission();
-    Wire.requestFrom(device_address_, 1);
-    byte currentState = Wire.read();
+    
+    byte currentState = readInputRegister();
   
     // 更新指定引脚的状态
     if (value == HIGH) {
@@ -137,21 +134,13 @@ bool TCA6408::digitalWrite(Pin pin, int value) {
         return false;
     }
   
-    // 写入新的输出端口状态
-    Wire.beginTransmission(device_address_);
-    Wire.write(OUTPUT_PORT);
-    Wire.write(currentState);
-    Wire.endTransmission();
+    writeOutputRegister(currentState);
     return true;
 }
 
 int TCA6408::digitalRead(Pin pin) {
     // 读取输入端口状态
-    Wire.beginTransmission(device_address_);
-    Wire.write(INPUT_PORT);
-    Wire.endTransmission();
-    Wire.requestFrom(device_address_, 1);
-    byte inputState = Wire.read();
+    byte inputState = readInputRegister();
   
     // 返回指定引脚的状态
     return (inputState & (1 << pin)) != 0;
@@ -171,4 +160,11 @@ bool TCA6408::pinMode(Pin pin, int mode) {
         return false;
     }
     return true;
+}
+
+void TCA6408::printPinStates() {
+    Pin arr[8] = {P0, P1, P2, P3, P4, P5, P6, P7};
+    for (int i = 0; i < 8; i++) {
+        Serial.printf("i=%d state=%d\r\n", i, digitalRead(arr[i]));
+    }
 }

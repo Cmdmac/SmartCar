@@ -75,14 +75,11 @@ esp_err_t Sr::get_feed_data(bool is_get_raw_channel, int16_t *buffer, int buffer
 void Sr::feed_Task(void *arg)
 {
     esp_afe_sr_data_t *afe_data = (esp_afe_sr_data_t*)arg;  // 获取参数
+
     int audio_chunksize = afe_handle->get_feed_chunksize(afe_data); // 获取帧长度
-    int total_channel_num = afe_handle->get_total_channel_num(afe_data); //获取总共通道数，麦克风通道+参考通道
-    int nch = afe_handle->get_channel_num(afe_data); // 获取声道数
-    int feed_channel = get_feed_channel(); // 获取ADC输入通道数,对应麦克风有几路输入
-    ESP_LOGI(TAG, "total_channel_num=%d nch=%d feed_channel=%d", total_channel_num, nch, feed_channel);
-    assert(nch <= feed_channel);
+    int feed_channel = afe_handle->get_feed_channel_num(afe_data); 
     //分配feed通道内存，通道数是total_channel_num
-    int16_t *i2s_buff = (int16_t*)heap_caps_malloc(audio_chunksize * sizeof(int16_t) * total_channel_num, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM); // 分配获取I2S数据的缓存大小
+    int16_t *i2s_buff = (int16_t*)heap_caps_malloc(audio_chunksize * sizeof(int16_t) * feed_channel, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM); // 分配获取I2S数据的缓存大小
     assert(i2s_buff);
 
     // IPAddress remoteIP(192, 168, 2, 153);  // 替换为实际的目标IP地址
@@ -99,10 +96,10 @@ void Sr::feed_Task(void *arg)
         // esp_err_t result = i2s_read(I2S_NUM_0, i2s_buff, audio_chunksize * sizeof(int16_t), &bytes_read, portMAX_DELAY);
         // client.write((uint8_t*)i2s_buff, bytes_read);
         //调整feed通道
-        for (int  i = audio_chunksize - 1; i >= 0; i--) {
-            i2s_buff[i * 2 + 1] = 0;
-            i2s_buff[i * 2 + 0] = i2s_buff[i];
-        }
+        // for (int  i = audio_chunksize - 1; i >= 0; i--) {
+        //     i2s_buff[i * 2 + 1] = 0;
+        //     i2s_buff[i * 2 + 0] = i2s_buff[i];
+        // }
 
         afe_handle->feed(afe_data, i2s_buff); // 把获取到的I2S数据输入给afe_data
     }
@@ -276,45 +273,12 @@ void Sr::setup(void)
     mic.setup(16000, I2S_DATA_BIT_WIDTH_16BIT);
     models = esp_srmodel_init("model"); // 获取模型 名称“model”和分区表中装载模型的名称一致
 
-    afe_handle = (esp_afe_sr_iface_t *)&ESP_AFE_SR_HANDLE;  // 先配置afe句柄 随后才可以调用afe接口
-    afe_config_t afe_config =  { 
-        .aec_init = true, 
-        .se_init = true, 
-        .vad_init = true, 
-        .wakenet_init = true, 
-        .voice_communication_init = false, 
-        .voice_communication_agc_init = false, 
-        .voice_communication_agc_gain = 15, 
-        .vad_mode = VAD_MODE_3, 
-        .wakenet_model_name = NULL, 
-        .wakenet_model_name_2 = NULL, 
-        .wakenet_mode = DET_MODE_2CH_90, 
-        .afe_mode = SR_MODE_LOW_COST, 
-        .afe_perferred_core = 0, 
-        .afe_perferred_priority = 5, 
-        .afe_ringbuf_size = 50, 
-        .memory_alloc_mode = AFE_MEMORY_ALLOC_MORE_PSRAM, 
-        .afe_linear_gain = 1.0, 
-        .agc_mode = AFE_MN_PEAK_AGC_MODE_2, 
-        .pcm_config = {
-            //mic_num + ref_num
-            .total_ch_num = 2, 
-            //麦克风个数
-            .mic_num = 1,
-            //参考通道个数 
-            .ref_num = 1, 
-            //采样率，必须为16000
-            .sample_rate = 16000, 
-        },
-        .debug_init = false, 
-        .debug_hook = {{AFE_DEBUG_HOOK_MASE_TASK_IN, NULL}, {AFE_DEBUG_HOOK_FETCH_TASK_IN, NULL}}, 
-        .afe_ns_mode = NS_MODE_SSP, 
-        .afe_ns_model_name = NULL, 
-    }; // 配置afe
+    afe_config_t* afe_config =  afe_config_init("M", models, AFE_TYPE_SR, AFE_MODE_LOW_COST);
+    afe_handle = esp_afe_handle_from_config(afe_config);
 
-    afe_config.wakenet_model_name = esp_srmodel_filter(models, ESP_WN_PREFIX, NULL); // 配置唤醒模型 必须在create_from_config之前配置
-    afe_data = afe_handle->create_from_config(&afe_config); // 创建afe_data
-    ESP_LOGI(TAG, "wakenet:%s", afe_config.wakenet_model_name); // 打印唤醒名称
+    afe_config->wakenet_model_name = esp_srmodel_filter(models, ESP_WN_PREFIX, NULL); // 配置唤醒模型 必须在create_from_config之前配置
+    afe_data = afe_handle->create_from_config(afe_config); // 创建afe_data
+    ESP_LOGI(TAG, "wakenet:%s", afe_config->wakenet_model_name); // 打印唤醒名称
 
     task_flag = 1;
     xTaskCreatePinnedToCore(&Sr::detectDelegate, "detect", 8 * 1024, (void*)this, 5, NULL, 1); 

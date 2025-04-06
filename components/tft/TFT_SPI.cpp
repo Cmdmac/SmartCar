@@ -147,7 +147,7 @@ bool TFT_SPI::initLCD() {
         esp_lcd_panel_io_spi_config_t io_config = {
             .cs_gpio_num = BSP_LCD_SPI_CS,
             .dc_gpio_num = BSP_LCD_DC,
-            .spi_mode = 0,
+            .spi_mode = 0, // spi模式，0~3
             .pclk_hz = BSP_LCD_PIXEL_CLOCK_HZ,
             .trans_queue_depth = 10,
             .lcd_cmd_bits = LCD_CMD_BITS,
@@ -163,7 +163,7 @@ bool TFT_SPI::initLCD() {
     // ESP_LOGI(TAG, "Install ST7789 panel driver");
     esp_lcd_panel_dev_config_t panel_config = {
         .reset_gpio_num = BSP_LCD_RST,
-        .rgb_endian = LCD_RGB_ENDIAN_RGB,
+        .rgb_endian = LCD_RGB_ENDIAN_RGB, // RGB顺序
         .bits_per_pixel = BSP_LCD_BITS_PER_PIXEL,
     };
     
@@ -336,11 +336,25 @@ void TFT_SPI::drawPicture(int x_start, int y_start, int x_end, int y_end, const 
     heap_caps_free(pixels);  // 释放内存
 }
 
+void TFT_SPI::drawPicture(const unsigned char* image) {
+    // 分配内存 分配了需要的字节大小 且指定在外部SPIRAM中分配
+    size_t pixels_byte_size = (BSP_LCD_H_RES)*(BSP_LCD_V_RES) * 2;
+    uint16_t *pixels = (uint16_t *)heap_caps_malloc(pixels_byte_size, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+    if (NULL == pixels)
+    {
+        ESP_LOGE(TAG, "Memory for bitmap is not enough");
+        return;
+    }
+    memcpy(pixels, image, pixels_byte_size);  // 把图片数据拷贝到内存
+    esp_lcd_panel_draw_bitmap(panel_handle, 0, 0, BSP_LCD_H_RES, BSP_LCD_V_RES, (uint16_t *)pixels); // 显示整张图片数据
+    heap_caps_free(pixels);  // 释放内存
+}
+
 // 设置液晶屏颜色
-void TFT_SPI::setBackgroundColor(uint16_t color)
+void TFT_SPI::fillScreen(uint16_t color)
 {
     // 分配内存 这里分配了液晶屏一行数据需要的大小
-    uint16_t *buffer = (uint16_t *)heap_caps_malloc(BSP_LCD_H_RES * sizeof(uint16_t), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+    uint16_t *buffer = (uint16_t *)heap_caps_malloc((BSP_LCD_H_RES)*(BSP_LCD_V_RES) * sizeof(uint16_t), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
     
     if (NULL == buffer)
     {
@@ -348,14 +362,13 @@ void TFT_SPI::setBackgroundColor(uint16_t color)
     }
     else
     {
-        for (size_t i = 0; i < BSP_LCD_H_RES; i++) // 给缓存中放入颜色数据
+        for (size_t i = 0; i < BSP_LCD_H_RES * BSP_LCD_V_RES; i++) // 给缓存中放入颜色数据
         {
             buffer[i] = color;
         }
-        for (int y = 0; y < BSP_LCD_V_RES; y++) // 显示整屏颜色
-        {
-            esp_lcd_panel_draw_bitmap(panel_handle, 0, y, BSP_LCD_H_RES, y+1, buffer);
-        }
+        
+        esp_lcd_panel_draw_bitmap(panel_handle, 0, 0, BSP_LCD_H_RES, BSP_LCD_V_RES, buffer);
+
         free(buffer); // 释放内存
     }
 }

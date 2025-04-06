@@ -4,6 +4,6 @@
 # CMakeLists in this exact order for cmake to work correctly
 # cmake_minimum_required(VERSION 3.16)
 
-idf_component_register(SRCS "Mic.cpp"
+idf_component_register(SRCS "Es8311.cpp" "Mic.cpp"
                        INCLUDE_DIRS "."
-                       REQUIRES arduino-esp32)
+                       REQUIRES arduino-esp32 audio_codecs)

@@ -28,7 +28,7 @@
 #define LCD_LEDC_CH          LEDC_CHANNEL_0
 
 #define BSP_LCD_H_RES              (240)
-#define BSP_LCD_V_RES              (240)
+#define BSP_LCD_V_RES              (320)
 
 // #define BSP_LCD_SPI_MOSI      (GPIO_NUM_15)
 // #define BSP_LCD_SPI_CLK       (GPIO_NUM_16)
@@ -58,8 +58,9 @@ class TFT_SPI {
         esp_err_t setBrightness(int brightness);
         esp_err_t turnOnBacklight();
         esp_err_t turnOffBacklight();
-        void setBackgroundColor(uint16_t color);
+        void fillScreen(uint16_t color);
         void drawPicture(int x_start, int y_start, int x_end, int y_end, const unsigned char *gImage);
+        void drawPicture(const unsigned char *gImage);
 
     private:
         bool init();

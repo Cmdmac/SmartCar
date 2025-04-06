@@ -37,12 +37,12 @@
 // #define BSP_LCD_RST           (GPIO_NUM_7)
 // #define BSP_LCD_BACKLIGHT     (GPIO_NUM_4)  
 
-#define BSP_LCD_SPI_MOSI      (GPIO_NUM_20)
-#define BSP_LCD_SPI_CLK       (GPIO_NUM_14)
-#define BSP_LCD_SPI_CS        (GPIO_NUM_21)
-#define BSP_LCD_DC            (GPIO_NUM_47)
-#define BSP_LCD_RST           (GPIO_NUM_3)
-#define BSP_LCD_BACKLIGHT     (GPIO_NUM_48)  
+#define BSP_LCD_SPI_MOSI      (GPIO_NUM_42)
+#define BSP_LCD_SPI_CLK       (GPIO_NUM_45)
+#define BSP_LCD_SPI_CS        (GPIO_NUM_40)
+#define BSP_LCD_DC            (GPIO_NUM_41)
+#define BSP_LCD_RST           (GPIO_NUM_NC)
+#define BSP_LCD_BACKLIGHT     (GPIO_NUM_39)  
 
 // #define DRIVER_GC9A01
 #define DRIVER_ST7789
@@ -55,6 +55,9 @@
 class TFT_SPI {
     public:
         void setup();
+        esp_err_t setBrightness(int brightness);
+        esp_err_t turnOnBacklight();
+        esp_err_t turnOffBacklight();
         void setBackgroundColor(uint16_t color);
         void drawPicture(int x_start, int y_start, int x_end, int y_end, const unsigned char *gImage);
 
@@ -67,10 +70,7 @@ class TFT_SPI {
         // lv_indev_t *initTouch(lv_disp_t *disp);
         // esp_err_t initTouchDriver(esp_lcd_touch_handle_t *ret_touch);
 
-        esp_err_t init_brightness();
-        esp_err_t setBrightness(int brightness);
-        esp_err_t turnOnBacklight();
-        esp_err_t turnOffBacklight();
+        esp_err_t initBrightness();
 
         esp_lcd_panel_handle_t panel_handle = NULL;
         esp_lcd_panel_io_handle_t io_handle = NULL;

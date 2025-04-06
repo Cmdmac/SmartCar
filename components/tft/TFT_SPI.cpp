@@ -1,6 +1,6 @@
 #include "TFT_SPI.h"
 #include "driver/gpio.h"
-
+#include "Arduino.h"
 #ifdef DRIVER_GC9A01
 #include "esp_lcd_gc9a01.h"
 #endif
@@ -11,7 +11,7 @@
 
 const char* TAG = "TFT_SPI";
 // 背光PWM初始化
-esp_err_t TFT_SPI::init_brightness(void)
+esp_err_t TFT_SPI::initBrightness(void)
 {
     // Setup LEDC peripheral for PWM backlight control
     const ledc_channel_config_t LCD_backlight_channel = {
@@ -95,7 +95,7 @@ bool TFT_SPI::init(void)
     //初始化LCD
     initLCD();
     //初始化触摸屏
-    initLvgl();
+    // initLvgl();
     return true;
 
 // err:
@@ -110,15 +110,16 @@ bool TFT_SPI::init(void)
 }
 
 bool TFT_SPI::initLCD() {
-    gpio_config_t lcd_bl_io_conf = {
-        .pin_bit_mask = (1ULL << BSP_LCD_BACKLIGHT),  // Select the GPIO pin
-        .mode = GPIO_MODE_OUTPUT,            // Set as output mode
-        .pull_up_en = GPIO_PULLUP_DISABLE,
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type = GPIO_INTR_DISABLE       // Disable interrupt
-    };
-    gpio_config(&lcd_bl_io_conf);
-    gpio_set_level((BSP_LCD_BACKLIGHT), 1);
+    initBrightness();
+    // gpio_config_t lcd_bl_io_conf = {
+    //     .pin_bit_mask = (1ULL << BSP_LCD_BACKLIGHT),  // Select the GPIO pin
+    //     .mode = GPIO_MODE_OUTPUT,            // Set as output mode
+    //     .pull_up_en = GPIO_PULLUP_DISABLE,
+    //     .pull_down_en = GPIO_PULLDOWN_DISABLE,
+    //     .intr_type = GPIO_INTR_DISABLE       // Disable interrupt
+    // };
+    // gpio_config(&lcd_bl_io_conf);
+    // gpio_set_level((BSP_LCD_BACKLIGHT), 1);
 
 
     #if defined(DRIVER_GC9A01)
@@ -129,13 +130,13 @@ bool TFT_SPI::initLCD() {
             .mosi_io_num = BSP_LCD_SPI_MOSI,
             .miso_io_num = GPIO_NUM_NC,
             .sclk_io_num = BSP_LCD_SPI_CLK,
-            .quadwp_io_num = -1,
-            .quadhd_io_num = -1,
+            .quadwp_io_num = GPIO_NUM_NC,
+            .quadhd_io_num = GPIO_NUM_NC,
             .max_transfer_sz = BSP_LCD_H_RES * BSP_LCD_V_RES * sizeof(uint16_t),
         };
     #endif
     
-    ESP_ERROR_CHECK(spi_bus_initialize(SPI2_HOST, &bus_conf, SPI_DMA_CH_AUTO));
+    ESP_ERROR_CHECK(spi_bus_initialize(BSP_LCD_SPI_NUM, &bus_conf, SPI_DMA_CH_AUTO));
 
     ESP_LOGI(TAG, "Install panel IO");
     // esp_lcd_panel_io_handle_t io_handle = NULL;
@@ -151,10 +152,13 @@ bool TFT_SPI::initLCD() {
             .trans_queue_depth = 10,
             .lcd_cmd_bits = LCD_CMD_BITS,
             .lcd_param_bits = LCD_PARAM_BITS,
+            .flags = {
+                .sio_mode = 0
+            }
         };
     #endif
     // Attach the LCD to the SPI bus
-    ESP_ERROR_CHECK(esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)SPI2_HOST, &io_config, &io_handle));
+    ESP_ERROR_CHECK(esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)BSP_LCD_SPI_NUM, &io_config, &io_handle));
 
     // ESP_LOGI(TAG, "Install ST7789 panel driver");
     esp_lcd_panel_dev_config_t panel_config = {
@@ -190,10 +194,10 @@ bool TFT_SPI::initLCD() {
     #endif
     ESP_ERROR_CHECK(esp_lcd_panel_reset(panel_handle));
     ESP_ERROR_CHECK(esp_lcd_panel_init(panel_handle));
-    esp_lcd_panel_invert_color(panel_handle, true);// Set inversion for esp32s3eye
+    ESP_ERROR_CHECK(esp_lcd_panel_invert_color(panel_handle, true));// Set inversion for esp32s3eye
 
     // turn on display
-    esp_lcd_panel_disp_on_off(panel_handle, true);
+    ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(panel_handle, true));
     // esp_lcd_panel_reset(panel_handle);  // 液晶屏复位
     // esp_lcd_panel_init(panel_handle);  // 初始化配置寄存器
     // esp_lcd_panel_invert_color(panel_handle, true); // 颜色反转
@@ -201,7 +205,8 @@ bool TFT_SPI::initLCD() {
     // esp_lcd_panel_mirror(panel_handle, true, false); // 镜像
 
     ESP_LOGI(TAG, "turn on lcd");
-    setBackgroundColor(0xFFFF); // 设置整屏背景黑色
+    // setBackgroundColor(0x000); // 设置整屏背景黑色
+    // turnOnBacklight(); // 打开背光显示
     return true;
 }
 
@@ -308,8 +313,8 @@ void TFT_SPI::setup(void)
 {
     esp_err_t ret = ESP_OK;
     ESP_LOGI(TAG, "init tft lcd");    
-    ret = init(); // 液晶屏驱动初始
-    // ret = turnOnBacklight(); // 打开背光显示
+    bool r = init(); // 液晶屏驱动初始
+    ret = turnOnBacklight(); // 打开背光显示
     // test_draw_bitmap(panel_handle);
 
     return;

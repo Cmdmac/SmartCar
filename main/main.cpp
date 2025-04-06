@@ -84,15 +84,15 @@ void setup() {
   tft.fillScreen(0xff0);
   // sr.setup();
 
-  int x = (BSP_LCD_H_RES - 240.0) / 2;
-  int y = (BSP_LCD_V_RES - 240.0) / 2;
-  Serial.println(x);
-  Serial.println(y);
-  tft.drawPicture(x,  y, x + 240, y + 240, (const unsigned char *) logo_en_240x240_lcd);
+  // int x = (BSP_LCD_H_RES - 240.0) / 2;
+  // int y = (BSP_LCD_V_RES - 240.0) / 2;
+  // Serial.println(x);
+  // Serial.println(y);
+  // tft.drawPicture(x,  y, x + 240, y + 240, (const unsigned char *) logo_en_240x240_lcd);
     
   // tft.fillScreen(0xf00);
 
-  // lv_demo_benchmark(); 
+  lv_demo_benchmark(); 
   // qmi8658.setUp();
   // scanI2CDevices();
 

@@ -95,7 +95,7 @@ bool TFT_SPI::init(void)
     //初始化LCD
     initLCD();
     //初始化触摸屏
-    // initLvgl();
+    initLvgl();
     return true;
 
 // err:

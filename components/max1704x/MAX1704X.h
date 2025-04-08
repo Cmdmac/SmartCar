@@ -55,10 +55,6 @@ class MAX1704X
   public:
     MAX1704X(float);
     bool begin();
-    bool begin(bool);
-    bool begin(bool, uint8_t);
-    bool begin(uint8_t);
-    bool begin(TwoWire*);
     bool begin(TwoWire*, uint8_t);
     bool begin(TwoWire*, bool, uint8_t);
 #if defined(ESP8266) || defined(ESP32)
@@ -83,17 +79,19 @@ class MAX1704X
     void clearAlert();
     uint8_t threshold();
     void threshold(uint8_t);
-    bool deviceFound();
-    uint8_t findFirstDevice();
-    uint8_t findFirstDevice(uint16_t expectedVersion);
 
     //
     // obsolete - will be removed in future release
     //
     uint8_t getThreshold();
     void setThreshold(uint8_t);
-    
+    void print();
   protected:
+    bool begin(bool initializeWire, uint8_t address);
+    bool deviceFound();
+    uint8_t findFirstDevice();
+    uint8_t findFirstDevice(uint16_t expectedVersion);
+    
     TwoWire *_wire;
     uint8_t _address;
     float _voltageIncrement;

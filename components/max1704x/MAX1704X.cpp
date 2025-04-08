@@ -33,10 +33,16 @@ bool MAX1704X::begin()
   return this->begin(true, this->_address);
 }
 
-bool MAX1704X::begin(bool initializeWire)
+bool MAX1704X::begin(TwoWire* wire, uint8_t address)
 {
-  this->_address = I2C_DEFAULT_ADDRESS;
-  return this->begin(initializeWire, this->_address);
+  this->_wire = wire;
+  return this->begin(wire, false, address);
+}
+
+bool MAX1704X::begin(TwoWire* wire, bool initializeWire, uint8_t address)
+{
+  this->_wire = wire;
+  return this->begin(initializeWire, address);
 }
 
 bool MAX1704X::begin(bool initializeWire, uint8_t address)
@@ -62,29 +68,6 @@ bool MAX1704X::begin(bool initializeWire, uint8_t address)
   }
 
   return returnValue;
-}
-
-bool MAX1704X::begin(uint8_t address)
-{
-  return this->begin(true, address);
-}
-
-bool MAX1704X::begin(TwoWire* wire)
-{
-  this->_wire = wire;
-  return this->begin(false);
-}
-
-bool MAX1704X::begin(TwoWire* wire, uint8_t address)
-{
-  this->_wire = wire;
-  return this->begin(false, address);
-}
-
-bool MAX1704X::begin(TwoWire* wire, bool initializeWire, uint8_t address)
-{
-  this->_wire = wire;
-  return this->begin(initializeWire, address);
 }
 
 #if defined(ESP8266) || defined(ESP32)
@@ -397,4 +380,18 @@ uint8_t MAX1704X::findFirstDevice(uint16_t expectedVersion)
   }
 
   return returnValue;
+}
+
+void MAX1704X::print() {
+  Serial.println("Device Reading:");
+  Serial.print("Address:       0x"); Serial.println(address(), HEX);
+  Serial.print("Version:       "); Serial.println(version());
+  Serial.print("ADC:           "); Serial.println(adc());
+  Serial.print("Voltage:       "); Serial.print(voltage()); Serial.println(" mV");
+  Serial.print("Percent:       "); Serial.print(percent()); Serial.println("%");
+  Serial.print("Is Sleeping:   "); Serial.println(isSleeping() ? "Yes" : "No");
+  Serial.print("Alert:         "); Serial.println(alertIsActive() ? "Yes" : "No");
+  Serial.print("Threshold:     "); Serial.print(getThreshold()); Serial.println("%");
+  Serial.print("Compensation:  0x"); Serial.println(compensation(), HEX);
+  Serial.println();
 }

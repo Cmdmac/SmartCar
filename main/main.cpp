@@ -13,6 +13,9 @@
 #include "demos/lv_demos.h"
 #include "Sr.h"
 #include <TCA6408.h>
+// #include "power_management.h"
+#include "Battery.h"
+#include "MAX1704X.h"
 // Led led;
 
 // #include "driver/i2s.h"
@@ -34,6 +37,9 @@ Camera camera;
 TFT_SPI tft;
 Sr sr;
 
+MAX1704X max1704x(1.0);
+Battery battery;
+
 const TCA6408::DeviceAddress DEVICE_ADDRESS = TCA6408::DEVICE_ADDRESS_0;
 uint8_t RESET_PIN = 0;
 TCA6408 tca6408;
@@ -44,10 +50,6 @@ void setup() {
   Serial.println("setup");
   // Init_i2s();
 
-  // pinMode(GPIO_NUM_48, OUTPUT);
-  // digitalWrite(GPIO_NUM_48, HIGH);
-  // pinMode(GPIO_NUM_4, INPUT);
-
   // net.setUpWifi();
   // 启动UDP
   // xTaskCreate(udp_client_task, "udp_client", 4096, NULL, 5, &client_task_handle);
@@ -56,7 +58,13 @@ void setup() {
   // ir.startLearn();
   // camera.setUp();
       // camera.startStreamServer(); 
-  // Serial.println(Wire.begin(4, 5));
+  Serial.println(Wire.begin(4, 5));
+
+  // max1704x.begin(&Wire, 0x36); // 0x36 for iFarm4G board
+  // max1704x.print();
+
+  battery.setup();
+
 
   // tca6408.setup(Wire, DEVICE_ADDRESS);
   // tca6408.setResetPin(RESET_PIN);
@@ -79,9 +87,11 @@ void setup() {
 
   // tca6408.printPinStates();
 
-  tft.setup();
-  tft.setBrightness(50);
-  tft.fillScreen(0xff0);
+  // tft.setup();
+  // tft.setBrightness(50);
+
+  // battery_voltage_monitor_start();
+  // tft.fillScreen(0xff0);
   // sr.setup();
 
   // int x = (BSP_LCD_H_RES - 240.0) / 2;
@@ -92,7 +102,7 @@ void setup() {
     
   // tft.fillScreen(0xf00);
 
-  lv_demo_benchmark(); 
+  // lv_demo_benchmark(); 
   // qmi8658.setUp();
   // scanI2CDevices();
 
@@ -105,12 +115,12 @@ void setup() {
   // io.digitalWrite(0, HIGH);
   // io.digitalWrite(1, HIGH);
   // io.digitalWrite(7, HIGH);
-  // scanI2CDevices();
+  scanI2CDevices();
 }
 
 void loop() {
   // Serial.println("Hello world!");
-
+  Serial.println(battery.detect());
 
     delay(1000);
   // // qmi8658.loop();

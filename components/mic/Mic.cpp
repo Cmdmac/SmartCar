@@ -43,7 +43,7 @@ void Mic::setup(int pin_bclk, int pin_lrc, int pin_din, int sampleRate, i2s_data
 }
 
 void Mic::setup(int sampleRate, i2s_data_bit_width_t bit_width) {
-  this->setup(I2S_IN_BCLK, I2S_IN_LRC, I2S_IN_DIN, sampleRate, bit_width);
+  this->setup(bclk, lrc, din, sampleRate, bit_width);
 }
 
 void Mic::recordWav(int recordTime, MicCallback callback)

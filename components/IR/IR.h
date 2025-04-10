@@ -36,7 +36,7 @@ struct NecCode
 
 class Ir {
     public:
-      Ir(int txPin, int rxPin) : txPin(txPin), rxPin(rxPin) {
+      Ir(gpio_num_t txPin, gpio_num_t rxPin) : txPin(txPin), rxPin(rxPin), tx_channel(NULL) {
 
       }
       ~Ir();
@@ -142,6 +142,7 @@ class Ir {
       void parse_nec_frame(rmt_symbol_word_t *rmt_nec_symbols, size_t symbol_num);
       // void ir_learn_auto_learn_cb(ir_learn_state_t state, unsigned char sub_step, struct ir_learn_sub_list_head *data);
       // void ir_learn_save_result(struct ir_learn_sub_list_head *data_save, struct ir_learn_sub_list_head *data_src);
+      gpio_num_t txPin, rxPin;
       // rmt_channel_handle_t rx_channel;
       rmt_channel_handle_t tx_channel;
 
@@ -150,7 +151,7 @@ class Ir {
       vector<NecCode> mCodes;
       // uint16_t s_nec_code_address;
       // uint16_t s_nec_code_command;
-      int txPin, rxPin;
+
 };
 
 #endif

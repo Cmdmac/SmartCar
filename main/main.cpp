@@ -36,7 +36,7 @@ extern Net net;
 // Camera camera;
 
 // TFT_SPI tft;
-Sr sr;
+// Sr sr;
 
 MAX1704X max1704x(1.0);
 Battery battery(GPIO_NUM_2);

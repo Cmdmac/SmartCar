@@ -3,7 +3,6 @@
 #include <ESP_I2S.h>
 
 #include <Arduino.h>
-#include "Config.h"
 
 // #define I2S_IN_BCLK 40
 // #define I2S_IN_LRC 42
@@ -21,6 +20,9 @@ typedef std::function<void(uint8_t*, size_t)> MicCallback;
 
 class Mic {
     public:
+        Mic(int bclk, int lrc, int din) : bclk(bclk), lrc(lrc), din(din) {
+
+        }
         void setup(int pin_bclk, int pin_lrc, int pin_din, int sampleRate, i2s_data_bit_width_t bit_width);
         void setup(int sampleRate, i2s_data_bit_width_t bit_width);
         void recordWav(int recordTime, MicCallback callback);
@@ -31,6 +33,7 @@ class Mic {
         // int mSampleRate;
         // 创建一个 I2SClass 实例
         I2SClass i2s;
+        int bclk, lrc, din;
 };
 
 #endif

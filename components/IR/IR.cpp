@@ -23,11 +23,6 @@ static bool example_rmt_rx_done_callback(rmt_channel_handle_t channel, const rmt
     return high_task_wakeup == pdTRUE;
 }
 
-Ir::Ir() : tx_channel(NULL) {
-  // irrecv.setTolerance(kTolerancePercentage);  // Override the default tolerance.
-  
-}
-
 Ir::~Ir() {
   if (tx_channel != NULL) {
     rmt_disable(tx_channel);

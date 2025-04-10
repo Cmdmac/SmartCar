@@ -107,7 +107,7 @@ class FileWebServer {
       void loop();
 
     public:
-        FileWebServer(gpio_num_t csPin, gpio_num_t sdPin, gpio_num_t sckPin, gpio_num_t misoPin, gpio_num_t mosiPin) : server(FILEWEBSERVER_PORT), csPin(csPin), sdPin(sdPin), sckPin(sckPin), misoPin(misoPin), mosiPin(mosiPin) {
+        FileWebServer(gpio_num_t csPin, gpio_num_t sdPin, gpio_num_t sckPin, gpio_num_t misoPin, gpio_num_t mosiPin) : csPin(csPin), sdPin(sdPin), sckPin(sckPin), misoPin(misoPin), mosiPin(mosiPin), server(FILEWEBSERVER_PORT){
             // server = WebServer(FILEWEBSERVER_PORT);
         }
         void setup();

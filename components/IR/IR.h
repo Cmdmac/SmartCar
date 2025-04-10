@@ -9,8 +9,7 @@
 #include <vector>
 using namespace std;
 
-#define IR_TX_GPIO_NUM                  GPIO_NUM_39
-#define IR_RX_GPIO_NUM                  GPIO_NUM_10
+
 #define IR_RESOLUTION_HZ                1000000 // 1MHz resolution, 1 tick = 1us
 
 #define IR_BUFFER_SIZE 1024
@@ -37,7 +36,9 @@ struct NecCode
 
 class Ir {
     public:
-      Ir();
+      Ir(int txPin, int rxPin) : txPin(txPin), rxPin(rxPin) {
+
+      }
       ~Ir();
       static void delegate(void *pvParameters) {
         Ir* instance = static_cast<Ir*>(pvParameters);
@@ -149,6 +150,7 @@ class Ir {
       vector<NecCode> mCodes;
       // uint16_t s_nec_code_address;
       // uint16_t s_nec_code_command;
+      int txPin, rxPin;
 };
 
 #endif

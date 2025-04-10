@@ -8,32 +8,27 @@
 
 void startCameraServer();
 
-
-Camera::Camera() {
-
-}
-
 void Camera::setUp() {
 
     camera_config_t config;
     config.ledc_channel = LEDC_CHANNEL_0;
     config.ledc_timer = LEDC_TIMER_0;
-    config.pin_d0 = Y2_GPIO_NUM;
-    config.pin_d1 = Y3_GPIO_NUM;
-    config.pin_d2 = Y4_GPIO_NUM;
-    config.pin_d3 = Y5_GPIO_NUM;
-    config.pin_d4 = Y6_GPIO_NUM;
-    config.pin_d5 = Y7_GPIO_NUM;
-    config.pin_d6 = Y8_GPIO_NUM;
-    config.pin_d7 = Y9_GPIO_NUM;
-    config.pin_xclk = XCLK_GPIO_NUM;
-    config.pin_pclk = PCLK_GPIO_NUM;
-    config.pin_vsync = VSYNC_GPIO_NUM;
-    config.pin_href = HREF_GPIO_NUM;
-    config.pin_sccb_sda = SIOD_GPIO_NUM;
-    config.pin_sccb_scl = SIOC_GPIO_NUM;
-    config.pin_pwdn = PWDN_GPIO_NUM;
-    config.pin_reset = RESET_GPIO_NUM;
+    config.pin_d0 = y2;
+    config.pin_d1 = y3;
+    config.pin_d2 = y4;
+    config.pin_d3 = y5;
+    config.pin_d4 = y6;
+    config.pin_d5 = y7;
+    config.pin_d6 = y8;
+    config.pin_d7 = y9;
+    config.pin_xclk = xclk;
+    config.pin_pclk = pclk;
+    config.pin_vsync = vsync;
+    config.pin_href = href;
+    config.pin_sccb_sda = siod;
+    config.pin_sccb_scl = sioc;
+    config.pin_pwdn = pwdn;
+    config.pin_reset = reset;
     config.xclk_freq_hz = 12000000;
     config.frame_size = FRAMESIZE_UXGA;
     config.pixel_format = PIXFORMAT_JPEG; // for streaming

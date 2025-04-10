@@ -17,6 +17,7 @@
 #include "Battery.h"
 #include "MAX1704X.h"
 // Led led;
+#include "Config.h"
 
 // #include "driver/i2s.h"
 #define MAX98375_BCLK_IO1 5
@@ -32,13 +33,13 @@ extern Net net;
 // QMI8658 qmi8658;
 // PCA9557 io(0x19, &Wire); // 0x19 for iFarm4G board
 
-Camera camera;
+// Camera camera;
 
-TFT_SPI tft;
+// TFT_SPI tft;
 Sr sr;
 
 MAX1704X max1704x(1.0);
-Battery battery;
+Battery battery(GPIO_NUM_2);
 
 const TCA6408::DeviceAddress DEVICE_ADDRESS = TCA6408::DEVICE_ADDRESS_0;
 uint8_t RESET_PIN = 0;

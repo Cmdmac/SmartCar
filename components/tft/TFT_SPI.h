@@ -54,6 +54,14 @@
 
 class TFT_SPI {
     public:
+        TFT_SPI(int mosi, int clk, int cs, int dc, int rst, int bl) {
+            this->mosi = mosi;
+            this->clk = clk;
+            this->cs = cs;
+            this->dc = dc;
+            this->rst = rst;
+            this->bl = bl;
+        }
         void setup();
         esp_err_t setBrightness(int brightness);
         esp_err_t turnOnBacklight();
@@ -63,6 +71,7 @@ class TFT_SPI {
         void drawPicture(const unsigned char *gImage);
 
     private:
+        int mosi, clk, cs, dc, rst, bl;
         bool init();
         bool initLCD();
         bool initLvgl();

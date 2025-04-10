@@ -24,7 +24,7 @@ int Battery::detect() {
         battery_voltage_percent_last = battery_voltage_percent;
     }
 
-    int vbat_charging_state = gpio_get_level(VBAT_MONITOR_GPIO);
+    int vbat_charging_state = gpio_get_level(monitorPin);
 
     if (vbat_charging_state != last_vbat_charging_state) {
         last_vbat_charging_state = vbat_charging_state;
@@ -134,7 +134,7 @@ bool Battery::adc_calibration_init(adc_unit_t unit, adc_channel_t channel, adc_a
 
 void Battery::setup() {
     gpio_config_t vbat_monitor_io_config = {
-        .pin_bit_mask = 1ULL << VBAT_MONITOR_GPIO,
+        .pin_bit_mask = 1ULL << monitorPin,
         .mode = GPIO_MODE_INPUT,
         .pull_up_en = GPIO_PULLUP_ENABLE,
         .pull_down_en = GPIO_PULLDOWN_DISABLE,

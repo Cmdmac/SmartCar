@@ -15,7 +15,7 @@ esp_err_t TFT_SPI::initBrightness(void)
 {
     // Setup LEDC peripheral for PWM backlight control
     const ledc_channel_config_t LCD_backlight_channel = {
-        .gpio_num = BSP_LCD_BACKLIGHT,
+        .gpio_num = bl,
         .speed_mode = LEDC_LOW_SPEED_MODE,
         .channel = LCD_LEDC_CH,
         .intr_type = LEDC_INTR_DISABLE,
@@ -127,9 +127,9 @@ bool TFT_SPI::initLCD() {
                                     BSP_LCD_H_RES * 80 * BSP_LCD_V_RES / 8);
     #elif defined(DRIVER_ST7789)
         spi_bus_config_t bus_conf = {
-            .mosi_io_num = BSP_LCD_SPI_MOSI,
+            .mosi_io_num = mosi,
             .miso_io_num = GPIO_NUM_NC,
-            .sclk_io_num = BSP_LCD_SPI_CLK,
+            .sclk_io_num = clk,
             .quadwp_io_num = GPIO_NUM_NC,
             .quadhd_io_num = GPIO_NUM_NC,
             .max_transfer_sz = BSP_LCD_H_RES * BSP_LCD_V_RES * sizeof(uint16_t),
@@ -145,8 +145,8 @@ bool TFT_SPI::initLCD() {
                 NULL, NULL);
     #elif defined(DRIVER_ST7789)
         esp_lcd_panel_io_spi_config_t io_config = {
-            .cs_gpio_num = BSP_LCD_SPI_CS,
-            .dc_gpio_num = BSP_LCD_DC,
+            .cs_gpio_num = cs,
+            .dc_gpio_num = dc,
             .spi_mode = 0, // spi模式，0~3
             .pclk_hz = BSP_LCD_PIXEL_CLOCK_HZ,
             .trans_queue_depth = 10,
@@ -162,7 +162,7 @@ bool TFT_SPI::initLCD() {
 
     // ESP_LOGI(TAG, "Install ST7789 panel driver");
     esp_lcd_panel_dev_config_t panel_config = {
-        .reset_gpio_num = BSP_LCD_RST,
+        .reset_gpio_num = rst,
         .rgb_endian = LCD_RGB_ENDIAN_RGB, // RGB顺序
         .bits_per_pixel = BSP_LCD_BITS_PER_PIXEL,
     };

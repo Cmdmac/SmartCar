@@ -382,8 +382,8 @@ void FileWebServer::setup(void) {
   #if FS_MODE == 1
     // #ifdef SD
         SPIClass spi;
-        spi.begin(SPI_CLK, SPI_MISO, SPI_MOSI, SPI_CS);
-        if (!SD.begin(SPI_CS, spi)) {
+        spi.begin(sckPin, misoPin, mosiPin, csPin);
+        if (!SD.begin(csPin, spi)) {
             Serial.println("sdcard init failure");
         }
     // #endif

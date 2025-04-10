@@ -12,11 +12,6 @@
 #define FILEWEBSERVER_PORT 88
 #define HOST "esp32sd"
 
-#define SPI_CS 46
-#define SPI_MOSI 3
-#define SPI_CLK 20
-#define SPI_MISO 19
-
 #define FS_MODE 1
 
 #if FS_MODE == 1
@@ -30,6 +25,7 @@ class FileWebServer {
         void loadIndexFile(const std::string& path);
     protected:
         /* data */
+        gpio_num_t csPin, sdPin, sckPin, misoPin, mosiPin;
         WebServer server;
         std::string spiffsIndexFileStr;
 
@@ -111,6 +107,9 @@ class FileWebServer {
       void loop();
 
     public:
+        FileWebServer(gpio_num_t csPin, gpio_num_t sdPin, gpio_num_t sckPin, gpio_num_t misoPin, gpio_num_t mosiPin) : server(FILEWEBSERVER_PORT), csPin(csPin), sdPin(sdPin), sckPin(sckPin), misoPin(misoPin), mosiPin(mosiPin) {
+            // server = WebServer(FILEWEBSERVER_PORT);
+        }
         void setup();
 
 };

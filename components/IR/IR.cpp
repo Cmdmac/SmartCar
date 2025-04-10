@@ -179,7 +179,7 @@ void Ir::send(NecCode data) {
   // size_t symbol_num = data.num_symbols;
   ESP_LOGI(TAG, "create RMT TX channel");
   rmt_tx_channel_config_t tx_channel_cfg = {
-      .gpio_num = IR_TX_GPIO_NUM,
+      .gpio_num = txPin,
       .clk_src = RMT_CLK_SRC_DEFAULT,
       .resolution_hz = IR_RESOLUTION_HZ,
       .mem_block_symbols = 64, // amount of RMT symbols that the channel can store at a time
@@ -224,7 +224,7 @@ void Ir::send(NecCode data) {
 void Ir::loop() {
   ESP_LOGI(TAG, "create RMT RX channel");
   rmt_rx_channel_config_t rx_channel_cfg = {
-      .gpio_num = IR_RX_GPIO_NUM,
+      .gpio_num = rxPin,
       .clk_src = RMT_CLK_SRC_DEFAULT,
       .resolution_hz = IR_RESOLUTION_HZ,
       .mem_block_symbols = 64, // amount of RMT symbols that the channel can store at a time

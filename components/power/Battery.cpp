@@ -13,9 +13,9 @@ int Battery::detect() {
     }
 
     int battery_voltage = voltage[0][0] * 2;
-    // printf("battery voltage: %d\n", battery_voltage);
+    printf("battery voltage: %d\n", battery_voltage);
     battery_voltage = battery_voltage_smoothing(battery_voltage);
-    float voltage_percent = ((battery_voltage - 0) / (4095.0 - 0)) * 100.0;
+    float voltage_percent = ((battery_voltage - 0) / (4096.0 - 0)) * 100.0 + 1;
     int battery_voltage_percent = (int)voltage_percent;
     static int battery_voltage_percent_last = 75;
     if (battery_voltage_percent_last != battery_voltage_percent) {

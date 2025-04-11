@@ -15,9 +15,24 @@ class Battery
 {
 private:
     int estimateCapacity(float voltage);
-    int battery_voltage_smoothing(int new_sample);
+    int batteryVoltageSmoothing(int new_sample);
     bool adc_calibration_init(adc_unit_t unit, adc_channel_t channel, adc_atten_t atten, adc_cali_handle_t *out_handle);
-
+    /*
+    锂电池电压与剩余电量关系：
+    电压 (V)	电量 (%)
+    4.20	100%
+    3.90	75%
+    3.70	50%
+    3.50	25%
+    3.30	0%
+    */
+    float voltageToPercent(float voltage) {
+        if (voltage >= 4.2) return 100;
+        else if (voltage >= 3.9) return 75 + (voltage - 3.9) * 25 / 0.3; // 3.9~4.2V对应75%~100%
+        else if (voltage >= 3.7) return 50 + (voltage - 3.7) * 25 / 0.2; // 3.7~3.9V对应50%~75%
+        else if (voltage >= 3.5) return 25 + (voltage - 3.5) * 25 / 0.2; // 3.5~3.7V对应25%~50%
+        else return 0;
+    }
     gpio_num_t monitorPin;
     int adc_raw[2][10];
     int voltage[2][10];

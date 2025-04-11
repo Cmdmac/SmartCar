@@ -12,17 +12,13 @@ int Battery::detect() {
         ESP_ERROR_CHECK(adc_cali_raw_to_voltage(adc1_cali_chan0_handle, adc_raw[0][0], &voltage[0][0]));
     }
 
-    int battery_voltage = voltage[0][0] * 2;
+    int battery_voltage = voltage[0][0];
     printf("battery voltage: %d\n", battery_voltage);
-    battery_voltage = battery_voltage_smoothing(battery_voltage);
-    float voltage_percent = ((battery_voltage - 0) / (4096.0 - 0)) * 100.0 + 1;
+    battery_voltage = batteryVoltageSmoothing(battery_voltage);
+    const int R1 = 100, R2 = 100; // 电阻分压电路中的电阻值
+    float voltage = ((battery_voltage / 4095.0) * 3.3) * ((R1 + R2) / R1);// 3.3v参考电压
+    float voltage_percent = voltageToPercent(voltage);
     int battery_voltage_percent = (int)voltage_percent;
-    static int battery_voltage_percent_last = 75;
-    if (battery_voltage_percent_last != battery_voltage_percent) {
-        // ESP_LOGW(TAG, "battery voltage percent: %d", battery_voltage_percent);
-        Serial.printf("battery voltage percent: %d\r\b", battery_voltage_percent);
-        battery_voltage_percent_last = battery_voltage_percent;
-    }
 
     int vbat_charging_state = gpio_get_level(monitorPin);
 
@@ -66,7 +62,7 @@ static const char *TAG = "power_management";
 
 // static light_mode_t power_current_light_mode = LIGHT_MODE_SLEEP;
 
-int Battery::battery_voltage_smoothing(int new_sample)
+int Battery::batteryVoltageSmoothing(int new_sample)
 {
     static int battery_voltage_samples[ADC_SMOOTH_WINDOW_SIZE] = {0};
     static uint8_t battery_voltage_index = 0;

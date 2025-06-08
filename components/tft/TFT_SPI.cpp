@@ -1,6 +1,19 @@
 #include "TFT_SPI.h"
+// #include "driver/i2c.h"
+// #include "driver/spi_master.h"
+#include "driver/ledc.h"
+// #include "freertos/FreeRTOS.h"
+// #include "freertos/task.h"
 #include "driver/gpio.h"
-#include "Arduino.h"
+#include "esp_lcd_panel_io.h"
+#include "esp_lcd_panel_vendor.h"
+#include "esp_lcd_panel_ops.h"
+// #include "Arduino.h"
+#if TFT_HAS_TOUCH == true
+#include "esp_lcd_touch_cst816s.h"
+#include "esp_lvgl_port.h"
+#endif
+
 #ifdef DRIVER_GC9A01
 #include "esp_lcd_gc9a01.h"
 #endif
@@ -70,9 +83,6 @@ esp_err_t TFT_SPI::turnOnBacklight(void)
     return setBrightness(100);
 }
 
-#define BSP_I2C_NUM           I2C_NUM_0             // I2C外设
-#define BSP_I2C_FREQ_HZ       100000         // 100kHz
-
 // esp_err_t bsp_i2c_init(void)
 // {
 //     i2c_config_t i2c_conf = {
@@ -95,7 +105,10 @@ bool TFT_SPI::init(void)
     //初始化LCD
     initLCD();
     //初始化触摸屏
-    initLvgl();
+    #if TFT_HAS_TOUCH == true
+        // initTouch(NULL); // 传入NULL，表示不使用LVGL
+        initLvgl();
+    #endif
     return true;
 
 // err:
@@ -206,10 +219,10 @@ bool TFT_SPI::initLCD() {
 
     ESP_LOGI(TAG, "turn on lcd");
     // setBackgroundColor(0x000); // 设置整屏背景黑色
-    // turnOnBacklight(); // 打开背光显示
     return true;
 }
 
+#if TFT_HAS_TOUCH == true
 bool TFT_SPI::initLvgl() {
     /* 液晶屏添加LVGL接口 */
     /* 初始化LVGL */
@@ -307,6 +320,7 @@ bool TFT_SPI::initTouch(lv_disp_t* disp) {
     lvgl_port_add_touch(&touch_cfg);
     return true;
 }
+#endif // TFT_HAS_TOUCH
 
 // LCD显示初始化
 void TFT_SPI::setup(void)

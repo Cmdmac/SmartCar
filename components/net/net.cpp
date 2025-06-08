@@ -122,9 +122,9 @@ void Net::onEventsCallback(WebsocketsEvent event, String data) {
 void Net::setUpWifi() {
   WiFi.begin(ssid, password);
 
-  Serial.print("Connecting to WiFi ...");
+  Serial.print("Connecting to WiFi ");
   while (WiFi.status()!= WL_CONNECTED) {
-    Serial.println(WiFi.status());
+    Serial.print(WiFi.status());
     delay(1000);
     Serial.print(".");
   }

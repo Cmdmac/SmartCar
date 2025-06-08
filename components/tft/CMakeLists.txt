@@ -6,4 +6,4 @@
 
 idf_component_register(SRCS "TFT_SPI.cpp"
                        INCLUDE_DIRS "."
-                       REQUIRES arduino-esp32 esp_lcd esp_lcd_gc9a01 lvgl esp_lvgl_port esp_lcd_touch_cst816s)
+                       REQUIRES arduino-esp32 esp_lcd esp_lcd_gc9a01 lvgl esp_lvgl_port esp_lcd_touch_cst816s common)

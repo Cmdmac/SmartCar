@@ -4,6 +4,6 @@
 # CMakeLists in this exact order for cmake to work correctly
 # cmake_minimum_required(VERSION 3.16)
 
-idf_component_register(SRCS "Ir.cpp" "ir_nec_encoder.c"
+idf_component_register(SRCS "IR.cpp" "Ir.cpp" "ir_nec_encoder.c"
                        INCLUDE_DIRS "."
                        REQUIRES arduino-esp32 ir_learn)

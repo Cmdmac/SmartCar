@@ -1,10 +1,10 @@
 #pragma once
-
+#include "driver/gpio.h"
 #if defined(CONFIG_IDF_TARGET_ESP32S3) 
 
 //I2C
-#define I2C_SDA     GPIO_NUM_4
-#define I2C_SCL     GPIO_NUM_5
+#define I2C_SDA     GPIO_NUM_12
+#define I2C_SCL     GPIO_NUM_13
 
 // 定义 INMP441 连接的 ESP32S3 引脚
 // INMP441 config
@@ -46,6 +46,47 @@
 #define VSYNC_GPIO_NUM 6
 #define HREF_GPIO_NUM 7
 #define PCLK_GPIO_NUM 13
+
+
+/***********************************************************/
+/****************    LCD显示屏 ↓   *************************/
+#define BSP_LCD_PIXEL_CLOCK_HZ     (80 * 1000 * 1000)
+#define BSP_LCD_SPI_NUM            (SPI3_HOST)
+#define LCD_CMD_BITS               (8)
+#define LCD_PARAM_BITS             (8)
+#define BSP_LCD_BITS_PER_PIXEL     (16)
+#define LCD_LEDC_CH          LEDC_CHANNEL_0
+
+#define BSP_LCD_H_RES              (240)
+#define BSP_LCD_V_RES              (240)
+
+// #define DRIVER_GC9A01
+#define DRIVER_ST7789
+
+#define TFT_HAS_TOUCH               false
+
+#define BSP_I2C_NUM           I2C_NUM_0             // I2C外设
+#define BSP_I2C_FREQ_HZ       100000         // 100kHz
+
+// #define BSP_LCD_SPI_MOSI      (GPIO_NUM_15)
+// #define BSP_LCD_SPI_CLK       (GPIO_NUM_16)
+// #define BSP_LCD_SPI_CS        (GPIO_NUM_5)
+// #define BSP_LCD_DC            (GPIO_NUM_6)
+// #define BSP_LCD_RST           (GPIO_NUM_7)
+// #define BSP_LCD_BACKLIGHT     (GPIO_NUM_4)  
+
+// #define BSP_LCD_SPI_MOSI      (GPIO_NUM_38)
+// #define BSP_LCD_SPI_CLK       (GPIO_NUM_39)
+// #define BSP_LCD_SPI_CS        (GPIO_NUM_40)
+// #define BSP_LCD_DC            (GPIO_NUM_41)
+// #define BSP_LCD_RST           (GPIO_NUM_NC)
+// #define BSP_LCD_BACKLIGHT     (GPIO_NUM_12)  
+#define BSP_LCD_SPI_MOSI      (GPIO_NUM_41)
+#define BSP_LCD_SPI_CLK       (GPIO_NUM_40)
+#define BSP_LCD_SPI_CS        (GPIO_NUM_39)
+#define BSP_LCD_DC            (GPIO_NUM_38)
+#define BSP_LCD_RST           (GPIO_NUM_NC)
+#define BSP_LCD_BACKLIGHT     (GPIO_NUM_42)  
 
 #elif defined(CONFIG_IDF_TARGET_ESP32C3) 
 

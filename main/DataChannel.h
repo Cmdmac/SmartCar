@@ -6,5 +6,6 @@
 // QMC5883LCompass compass;
 void startTasks();
 void scanI2CDevices();
+void i2c_scanner(void);
 
 #endif

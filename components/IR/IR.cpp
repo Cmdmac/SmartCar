@@ -75,7 +75,7 @@ void Ir::parse_nec_frame(rmt_symbol_word_t *rmt_nec_symbols, size_t symbol_num)
       }
       break;
   default:
-      printf("Unknown NEC frame\r\n\r\n");
+      printf("Unknown NEC frame %d\r\n\r\n", symbol_num);
       break;
   }
 }

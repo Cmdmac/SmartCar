@@ -12,7 +12,7 @@
 #include "ir_nec_encoder.h"
 
 
-const char* TAG = "IR";
+static const char* TAG = "IR";
 
 static bool example_rmt_rx_done_callback(rmt_channel_handle_t channel, const rmt_rx_done_event_data_t *edata, void *user_data)
 {
@@ -164,31 +164,34 @@ void Ir::send(NecCode data) {
 //         uint32_t io_od_mode: 1;   /*!< Configure the GPIO as open-drain mode */
 //     } flags;                      /*!< TX channel config flags */
 // } rmt_tx_channel_config_t;
-  if (tx_channel != NULL) {
-    // initTXChannel();
-    return;
-  }
+
     
   // }
   // rmt_symbol_word_t *rmt_symbols = data.received_symbols;
   // size_t symbol_num = data.num_symbols;
-  ESP_LOGI(TAG, "create RMT TX channel");
-  rmt_tx_channel_config_t tx_channel_cfg = {
-      .gpio_num = txPin,
-      .clk_src = RMT_CLK_SRC_DEFAULT,
-      .resolution_hz = IR_RESOLUTION_HZ,
-      .mem_block_symbols = 64, // amount of RMT symbols that the channel can store at a time
-      .trans_queue_depth = 4,  // number of transactions that allowed to pending in the background, this example won't queue multiple transactions, so queue depth > 1 is sufficient
-  };
-  // rmt_channel_handle_t tx_channel = NULL;
-  ESP_ERROR_CHECK(rmt_new_tx_channel(&tx_channel_cfg, &tx_channel));
+  if (tx_channel == NULL) {
+    ESP_LOGI(TAG, "create RMT TX channel");
+    rmt_tx_channel_config_t tx_channel_cfg = {
+        .gpio_num = txPin,
+        .clk_src = RMT_CLK_SRC_DEFAULT,
+        .resolution_hz = IR_RESOLUTION_HZ,
+        .mem_block_symbols = 64, // amount of RMT symbols that the channel can store at a time
+        .trans_queue_depth = 4,  // number of transactions that allowed to pending in the background, this example won't queue multiple transactions, so queue depth > 1 is sufficient
+    };
+    // rmt_channel_handle_t tx_channel = NULL;
+    ESP_ERROR_CHECK(rmt_new_tx_channel(&tx_channel_cfg, &tx_channel));
 
-  ESP_LOGI(TAG, "modulate carrier to TX channel");
-  rmt_carrier_config_t carrier_cfg = {
-    .frequency_hz = 38000, // 38KHz
-    .duty_cycle = 0.33,
-  };
-  ESP_ERROR_CHECK(rmt_apply_carrier(tx_channel, &carrier_cfg));
+    ESP_LOGI(TAG, "modulate carrier to TX channel");
+    rmt_carrier_config_t carrier_cfg = {
+        .frequency_hz = 38000, // 38KHz
+        .duty_cycle = 0.33,
+    };
+    ESP_ERROR_CHECK(rmt_apply_carrier(tx_channel, &carrier_cfg));
+
+    ESP_LOGI(TAG, "enable RMT TX channels");
+    ESP_ERROR_CHECK(rmt_enable(tx_channel));
+  }
+  
   
   // this example won't send NEC frames in a loop
   rmt_transmit_config_t transmit_config = {
@@ -202,8 +205,7 @@ void Ir::send(NecCode data) {
   rmt_encoder_handle_t nec_encoder = NULL;
   ESP_ERROR_CHECK(rmt_new_ir_nec_encoder(&nec_encoder_cfg, &nec_encoder));
   // Address=7F80, Command=FE01
-  ESP_LOGI(TAG, "enable RMT TX and RX channels");
-  ESP_ERROR_CHECK(rmt_enable(tx_channel));
+
   const ir_nec_scan_code_t scan_code = {
       .address = data.address,
       .command = data.command,

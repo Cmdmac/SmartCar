@@ -192,23 +192,24 @@ void Ir::send(NecCode data) {
     ESP_ERROR_CHECK(rmt_enable(tx_channel));
   }
   
-  
-  // this example won't send NEC frames in a loop
-  rmt_transmit_config_t transmit_config = {
-      .loop_count = 0, // no loop
-  };
+  if (nec_encoder == NULL) {
+        ESP_LOGI(TAG, "install IR NEC encoder");
+        ir_nec_encoder_config_t nec_encoder_cfg = {
+            .resolution = IR_RESOLUTION_HZ,
+        };
+        // rmt_encoder_handle_t nec_encoder = NULL;
+        ESP_ERROR_CHECK(rmt_new_ir_nec_encoder(&nec_encoder_cfg, &nec_encoder));
+  }
 
-  ESP_LOGI(TAG, "install IR NEC encoder");
-  ir_nec_encoder_config_t nec_encoder_cfg = {
-      .resolution = IR_RESOLUTION_HZ,
-  };
-  rmt_encoder_handle_t nec_encoder = NULL;
-  ESP_ERROR_CHECK(rmt_new_ir_nec_encoder(&nec_encoder_cfg, &nec_encoder));
   // Address=7F80, Command=FE01
 
   const ir_nec_scan_code_t scan_code = {
       .address = data.address,
       .command = data.command,
+  };
+    // this example won't send NEC frames in a loop
+  rmt_transmit_config_t transmit_config = {
+      .loop_count = 0, // no loop
   };
   ESP_ERROR_CHECK(rmt_transmit(tx_channel, nec_encoder, &scan_code, sizeof(scan_code), &transmit_config));
   rmt_tx_wait_all_done(tx_channel, -1);

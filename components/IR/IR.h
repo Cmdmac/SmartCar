@@ -36,7 +36,7 @@ struct NecCode
 
 class Ir {
     public:
-      Ir(gpio_num_t txPin, gpio_num_t rxPin) : txPin(txPin), rxPin(rxPin), tx_channel(NULL) {
+      Ir(gpio_num_t txPin, gpio_num_t rxPin) : txPin(txPin), rxPin(rxPin), tx_channel(NULL), nec_encoder(NULL) {
 
       }
       ~Ir();
@@ -145,6 +145,7 @@ class Ir {
       gpio_num_t txPin, rxPin;
       // rmt_channel_handle_t rx_channel;
       rmt_channel_handle_t tx_channel;
+      rmt_encoder_handle_t nec_encoder;
 
       SemaphoreHandle_t mIrDatalistMux;
       // vector<rmt_rx_done_event_data_t> mIrDataList;

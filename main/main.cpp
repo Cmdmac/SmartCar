@@ -2,47 +2,47 @@
 #include "Command.h"
 #include "freertos/FreeRTOS.h"  // 包含 FreeRTOS 基础头文件
 #include "freertos/task.h"      // 包含任务相关头文件
-// #include "Wire.h"
+#include "Wire.h"
 // #include "Led.h"
 // #include "Servo2.h"
-// #include "DataChannel.h"
+#include "DataChannel.h"
 // #include "Net.h"
-// #include "Ir.h"
+#include "Ir.h"
 // #include "QMI8658.h"
 // #include "PCA9557.h"
 // #include "Camera.h"
-// #include "TFT_SPI.h"
+#include "TFT_SPI.h"
 #include "logo_en_240x240_lcd.h"
-// #include "demos/lv_demos.h"
+#include "demos/lv_demos.h"
 // #include "Sr.h"
 // #include <TCA6408.h>
 // #include "power_management.h"
 // #include "Battery.h"
 // #include "MAX1704X.h"
 // Led led;
+// #include "Speaker.h"
 #include "Config.h"
 #include "esp_log.h"
 #include "driver/i2c_master.h"
 #include "es8311_audio_codec.h"
-
+// #include "bsp/esp-bsp.h"
+// #include "bsp/display.h"
 
 // #include "driver/i2s.h"
-#define MAX98375_BCLK_IO1 5
-#define MAX98375_LRCLK_IO1 4
-#define MAX98375_DOUT_IO1 6
 // const char* host = "192.168.1.4"; // 电脑的IP地址
 // const int port = 8888; // 监听的端口
 #define bufferLen 512
 
 // extern Net net;
 
-// Ir ir;
+Ir ir(GPIO_NUM_46, GPIO_NUM_3); // 0x15 for iFarm4G board
 // QMI8658 qmi8658;
 // PCA9557 io(0x19, &Wire); // 0x19 for iFarm4G board
 
 // Camera camera;
 
-// TFT_SPI tft(BSP_LCD_SPI_MOSI, BSP_LCD_SPI_CLK, BSP_LCD_SPI_CS, BSP_LCD_DC, BSP_LCD_RST, BSP_LCD_BACKLIGHT);
+// Speaker speaker(I2S_SPK_LRC, I2S_SPK_BCLK, I2S_SPK_DOUT);
+TFT_SPI tft(TFT_LCD_SPI_MOSI, TFT_LCD_SPI_CLK, TFT_LCD_SPI_CS, TFT_LCD_DC, TFT_LCD_RST, TFT_LCD_BACKLIGHT);
 // Sr sr;
 
 // MAX1704X max1704x(1.0);
@@ -69,6 +69,13 @@ void setup() {
   // ir.startLearn();
   // camera.setUp();
       // camera.startStreamServer(); 
+    // pinMode(GPIO_NUM_36, OUTPUT); // 设置GPIO_NUM_18为输出模式
+    // digitalWrite(GPIO_NUM_36, HIGH); // 关闭LED
+
+    // if (bsp_display_start() == NULL) {
+    //   ESP_LOGE("main", "display start failed!");
+    //   abort();
+    // }
       
   // ESP_LOGI("Main", "wire begin %d", Wire.begin(12, 13));
 
@@ -100,20 +107,21 @@ void setup() {
 
   // tca6408.printPinStates();
 
-  // tft.setup();
+  tft.setup();
   // tft.setBrightness(100);
 
   // battery_voltage_monitor_start();
   // tft.fillScreen(0xff0);
   // sr.setup();
 
-  int x = (BSP_LCD_H_RES - 240.0) / 2;
-  int y = (BSP_LCD_V_RES - 240.0) / 2;
+  // int x = (BSP_LCD_H_RES - 240.0) / 2;
+  // int y = (BSP_LCD_V_RES - 240.0) / 2;
   // Serial.println(x);
   // Serial.println(y);
   // tft.drawPicture(x,  y, x + 240, y + 240, (const unsigned char *) logo_en_240x240_lcd);
-    
-  // tft.fillScreen(0xf00);
+      // tft.drawPicture(0,  0, 128, 128, (const unsigned char *) logo_en_240x240_lcd);
+
+  tft.fillScreen(0xff0);
 
   // lv_demo_benchmark(); 
   // qmi8658.setUp();
@@ -129,6 +137,7 @@ void setup() {
   // io.digitalWrite(1, HIGH);
   // io.digitalWrite(7, HIGH);
   // scanI2CDevices();
+  /*
   i2c_master_bus_config_t i2c_bus_cfg = {
       .i2c_port = (i2c_port_t)1,
       .sda_io_num = GPIO_NUM_12,
@@ -145,7 +154,7 @@ void setup() {
 
   Es8311AudioCodec es8311(
     i2c_bus_, // I2C master handle
-    I2C_NUM_0, // I2C port
+    I2C_NUM_1, // I2C port
     16000, // Input sample rate
     16000, // Output sample rate
     GPIO_NUM_14, // MCLK
@@ -155,18 +164,14 @@ void setup() {
     GPIO_NUM_48, // DIN
     GPIO_NUM_NC, // PA pin (not used)
     0x7E // ES8311 I2C address
-);
-  // es8311.CreateDuplexChannels(
-  //   GPIO_NUM_14, // MCLK
-  //   GPIO_NUM_21, // BCLK
-  //   GPIO_NUM_47, // WS
-  //   GPIO_NUM_45, // DOUT
-  //   GPIO_NUM_48, // DIN
-  //   GPIO_NUM_NC, // PA pin
-  //   0x7E      // ES8311 I2C address
-  // );
+  );
+  */
+
   // es8311.EnableInput(true);
   // es8311.EnableOutput(true);
+
+  // speaker.setup();
+  // speaker.play("http://music.163.com/song/media/outer/url?id=447925558.mp3");
 }
 
 void loop() {
@@ -183,6 +188,8 @@ void loop() {
   // // 输出XYZ轴的倾角
   // ESP_LOGI("Main", "angle_x = %.1f  angle_y = %.1f angle_z = %.1f", data.AngleX, data.AngleY, data.AngleZ);
   // Serial.println(io.digitalRead(6));
-  vTaskDelay(pdMS_TO_TICKS(1));  // 至少释放1ms CPU时间
+  vTaskDelay(pdMS_TO_TICKS(1 * 1000));  // 至少释放1ms CPU时间
+  ESP_LOGI("Main", "send ir data");
+  // ir.send({0x7F80, 0xFE01}); // 发送红外数据
 }
 

@@ -13,9 +13,9 @@
 #define I2S_IN_LRC 4//42 // WS
 #define I2S_IN_DIN 6//41 // SD
 
-#define I2S_DOUT      42
-#define I2S_BCLK      2
-#define I2S_LRC       1
+#define I2S_SPK_DOUT      12
+#define I2S_SPK_BCLK      11
+#define I2S_SPK_LRC       10
 
 // ir
 #define IR_TX_GPIO_NUM                  GPIO_NUM_39
@@ -50,19 +50,20 @@
 
 /***********************************************************/
 /****************    LCD显示屏 ↓   *************************/
-#define BSP_LCD_PIXEL_CLOCK_HZ     (80 * 1000 * 1000)
-#define BSP_LCD_SPI_NUM            (SPI3_HOST)
+#define TFT_LCD_PIXEL_CLOCK_HZ     (80 * 1000 * 1000)
+#define TFT_LCD_SPI_NUM            (SPI3_HOST)
 #define LCD_CMD_BITS               (8)
 #define LCD_PARAM_BITS             (8)
-#define BSP_LCD_BITS_PER_PIXEL     (16)
-#define LCD_LEDC_CH          LEDC_CHANNEL_0
+#define TFT_LCD_BITS_PER_PIXEL     (16)
+#define LCD_LEDC_CH                 LEDC_CHANNEL_0
+#define TFT_INVERT_COLOR                false
 
-#define BSP_LCD_H_RES              (240)
-#define BSP_LCD_V_RES              (240)
+#define TFT_LCD_H_RES              (128)
+#define TFT_LCD_V_RES              (128)
 
-// #define DRIVER_GC9A01
-#define DRIVER_ST7789
-
+#define DRIVER_GC9A01
+// #define DRIVER_ST7789
+#define USE_LVGL                    false
 #define TFT_HAS_TOUCH               false
 
 #define BSP_I2C_NUM           I2C_NUM_0             // I2C外设
@@ -81,12 +82,19 @@
 // #define BSP_LCD_DC            (GPIO_NUM_41)
 // #define BSP_LCD_RST           (GPIO_NUM_NC)
 // #define BSP_LCD_BACKLIGHT     (GPIO_NUM_12)  
-#define BSP_LCD_SPI_MOSI      (GPIO_NUM_41)
-#define BSP_LCD_SPI_CLK       (GPIO_NUM_40)
-#define BSP_LCD_SPI_CS        (GPIO_NUM_39)
-#define BSP_LCD_DC            (GPIO_NUM_38)
-#define BSP_LCD_RST           (GPIO_NUM_NC)
-#define BSP_LCD_BACKLIGHT     (GPIO_NUM_42)  
+// #define BSP_LCD_SPI_MOSI      (GPIO_NUM_41)
+// #define BSP_LCD_SPI_CLK       (GPIO_NUM_40)
+// #define BSP_LCD_SPI_CS        (GPIO_NUM_39)
+// #define BSP_LCD_DC            (GPIO_NUM_38)
+// #define BSP_LCD_RST           (GPIO_NUM_NC)
+// #define BSP_LCD_BACKLIGHT     (GPIO_NUM_42)  
+
+#define TFT_LCD_SPI_MOSI      (GPIO_NUM_3)
+#define TFT_LCD_SPI_CLK       (GPIO_NUM_8)
+#define TFT_LCD_SPI_CS        (GPIO_NUM_18)
+#define TFT_LCD_DC            (GPIO_NUM_46)
+#define TFT_LCD_RST           (GPIO_NUM_NC)
+#define TFT_LCD_BACKLIGHT     (GPIO_NUM_NC)  
 
 #elif defined(CONFIG_IDF_TARGET_ESP32C3) 
 

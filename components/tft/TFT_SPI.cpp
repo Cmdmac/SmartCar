@@ -132,20 +132,10 @@ bool TFT_SPI::init(void)
 
 bool TFT_SPI::initLCD() {
     initBrightness();
-    // gpio_config_t lcd_bl_io_conf = {
-    //     .pin_bit_mask = (1ULL << BSP_LCD_BACKLIGHT),  // Select the GPIO pin
-    //     .mode = GPIO_MODE_OUTPUT,            // Set as output mode
-    //     .pull_up_en = GPIO_PULLUP_DISABLE,
-    //     .pull_down_en = GPIO_PULLDOWN_DISABLE,
-    //     .intr_type = GPIO_INTR_DISABLE       // Disable interrupt
-    // };
-    // gpio_config(&lcd_bl_io_conf);
-    // gpio_set_level((BSP_LCD_BACKLIGHT), 1);
-
 
     #if defined(DRIVER_GC9A01)
-        spi_bus_config_t bus_conf =GC9A01_PANEL_BUS_SPI_CONFIG(BSP_LCD_SPI_CLK, BSP_LCD_SPI_MOSI,
-                                    BSP_LCD_H_RES * BSP_LCD_V_RES * sizeof(uint16_t));
+        spi_bus_config_t bus_conf =GC9A01_PANEL_BUS_SPI_CONFIG(TFT_LCD_SPI_CLK, TFT_LCD_SPI_MOSI,
+                                    TFT_LCD_H_RES * TFT_LCD_V_RES * sizeof(uint16_t));
     #elif defined(DRIVER_ST7789)
         spi_bus_config_t bus_conf = {
             .mosi_io_num = mosi,
@@ -153,23 +143,23 @@ bool TFT_SPI::initLCD() {
             .sclk_io_num = clk,
             .quadwp_io_num = GPIO_NUM_NC,
             .quadhd_io_num = GPIO_NUM_NC,
-            .max_transfer_sz = BSP_LCD_H_RES * BSP_LCD_V_RES * sizeof(uint16_t),
+            .max_transfer_sz = TFT_LCD_H_RES * TFT_LCD_V_RES * sizeof(uint16_t),
         };
     #endif
-    
-    ESP_ERROR_CHECK(spi_bus_initialize(BSP_LCD_SPI_NUM, &bus_conf, SPI_DMA_CH_AUTO));
+
+    ESP_ERROR_CHECK(spi_bus_initialize(TFT_LCD_SPI_NUM, &bus_conf, SPI_DMA_CH_AUTO));
 
     ESP_LOGI(TAG, "Install panel IO");
     // esp_lcd_panel_io_handle_t io_handle = NULL;
     #ifdef DRIVER_GC9A01
-        esp_lcd_panel_io_spi_config_t io_config = GC9A01_PANEL_IO_SPI_CONFIG(BSP_LCD_SPI_CS, BSP_LCD_DC,
+        esp_lcd_panel_io_spi_config_t io_config = GC9A01_PANEL_IO_SPI_CONFIG(TFT_LCD_SPI_CS, TFT_LCD_DC,
                 NULL, NULL);
     #elif defined(DRIVER_ST7789)
         esp_lcd_panel_io_spi_config_t io_config = {
             .cs_gpio_num = cs,
             .dc_gpio_num = dc,
             .spi_mode = 0, // spi模式，0~3
-            .pclk_hz = BSP_LCD_PIXEL_CLOCK_HZ,
+            .pclk_hz = TFT_LCD_PIXEL_CLOCK_HZ,
             .trans_queue_depth = 10,
             .lcd_cmd_bits = LCD_CMD_BITS,
             .lcd_param_bits = LCD_PARAM_BITS,
@@ -179,13 +169,13 @@ bool TFT_SPI::initLCD() {
         };
     #endif
     // Attach the LCD to the SPI bus
-    ESP_ERROR_CHECK(esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)BSP_LCD_SPI_NUM, &io_config, &io_handle));
+    ESP_ERROR_CHECK(esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)TFT_LCD_SPI_NUM, &io_config, &io_handle));
 
     // ESP_LOGI(TAG, "Install ST7789 panel driver");
     esp_lcd_panel_dev_config_t panel_config = {
         .reset_gpio_num = rst,
         .rgb_endian = LCD_RGB_ENDIAN_RGB, // RGB顺序
-        .bits_per_pixel = BSP_LCD_BITS_PER_PIXEL,
+        .bits_per_pixel = TFT_LCD_BITS_PER_PIXEL,
     };
     
     esp_err_t ret = ESP_OK;
@@ -201,13 +191,13 @@ bool TFT_SPI::initLCD() {
         if (io_handle) {
             esp_lcd_panel_io_del(io_handle);
         }
-        spi_bus_free(BSP_LCD_SPI_NUM);
+        spi_bus_free(TFT_LCD_SPI_NUM);
         ESP_LOGI(TAG, "New panel failed");
         return false;
     }
     ESP_ERROR_CHECK(esp_lcd_panel_reset(panel_handle));
     ESP_ERROR_CHECK(esp_lcd_panel_init(panel_handle));
-    ESP_ERROR_CHECK(esp_lcd_panel_invert_color(panel_handle, true));// Set inversion for esp32s3eye
+    ESP_ERROR_CHECK(esp_lcd_panel_invert_color(panel_handle, TFT_INVERT_COLOR));// Set inversion for esp32s3eye
 
     // turn on display
     ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(panel_handle, true));
@@ -222,7 +212,7 @@ bool TFT_SPI::initLCD() {
     return true;
 }
 
-
+#if USE_LVGL == true
 bool TFT_SPI::initLvgl() {
     /* 液晶屏添加LVGL接口 */
     /* 初始化LVGL */
@@ -284,6 +274,7 @@ bool TFT_SPI::initLvgl() {
     // initTouch(disp);
     return true;
 }
+#endif // USE_LVGL
 
 #if TFT_HAS_TOUCH == true
 bool TFT_SPI::initTouch(lv_disp_t* disp) {
@@ -353,7 +344,7 @@ void TFT_SPI::drawPicture(int x_start, int y_start, int x_end, int y_end, const 
 
 void TFT_SPI::drawPicture(const unsigned char* image) {
     // 分配内存 分配了需要的字节大小 且指定在外部SPIRAM中分配
-    size_t pixels_byte_size = (BSP_LCD_H_RES)*(BSP_LCD_V_RES) * 2;
+    size_t pixels_byte_size = (TFT_LCD_H_RES)*(TFT_LCD_V_RES) * 2;
     uint16_t *pixels = (uint16_t *)heap_caps_malloc(pixels_byte_size, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
     if (NULL == pixels)
     {
@@ -361,7 +352,7 @@ void TFT_SPI::drawPicture(const unsigned char* image) {
         return;
     }
     memcpy(pixels, image, pixels_byte_size);  // 把图片数据拷贝到内存
-    esp_lcd_panel_draw_bitmap(panel_handle, 0, 0, BSP_LCD_H_RES, BSP_LCD_V_RES, (uint16_t *)pixels); // 显示整张图片数据
+    esp_lcd_panel_draw_bitmap(panel_handle, 0, 0, TFT_LCD_H_RES, TFT_LCD_V_RES, (uint16_t *)pixels); // 显示整张图片数据
     heap_caps_free(pixels);  // 释放内存
 }
 
@@ -369,7 +360,7 @@ void TFT_SPI::drawPicture(const unsigned char* image) {
 void TFT_SPI::fillScreen(uint16_t color)
 {
     // 分配内存 这里分配了液晶屏一行数据需要的大小
-    uint16_t *buffer = (uint16_t *)heap_caps_malloc((BSP_LCD_H_RES)*(BSP_LCD_V_RES) * sizeof(uint16_t), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+    uint16_t *buffer = (uint16_t *)heap_caps_malloc((TFT_LCD_H_RES)*(TFT_LCD_V_RES) * sizeof(uint16_t), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
     
     if (NULL == buffer)
     {
@@ -377,12 +368,12 @@ void TFT_SPI::fillScreen(uint16_t color)
     }
     else
     {
-        for (size_t i = 0; i < BSP_LCD_H_RES * BSP_LCD_V_RES; i++) // 给缓存中放入颜色数据
+        for (size_t i = 0; i < TFT_LCD_H_RES * TFT_LCD_V_RES; i++) // 给缓存中放入颜色数据
         {
             buffer[i] = color;
         }
-        
-        esp_lcd_panel_draw_bitmap(panel_handle, 0, 0, BSP_LCD_H_RES, BSP_LCD_V_RES, buffer);
+
+        esp_lcd_panel_draw_bitmap(panel_handle, 0, 0, TFT_LCD_H_RES, TFT_LCD_V_RES, buffer);
 
         free(buffer); // 释放内存
     }

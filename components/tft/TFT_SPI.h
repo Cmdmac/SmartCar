@@ -37,7 +37,9 @@ class TFT_SPI {
         int mosi, clk, cs, dc, rst, bl;
         bool init();
         bool initLCD();
-        bool initLvgl();
+        #if USE_LVGL == true
+            bool initLvgl();
+        #endif // USE_LVGL
         #if TFT_HAS_TOUCH == true
             bool initTouch(lv_disp_t*);
         #endif

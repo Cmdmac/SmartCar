@@ -9,9 +9,10 @@
 #include "esp_lcd_panel_vendor.h"
 #include "esp_lcd_panel_ops.h"
 // #include "Arduino.h"
+#include "esp_lvgl_port.h"
 #if TFT_HAS_TOUCH == true
 #include "esp_lcd_touch_cst816s.h"
-#include "esp_lvgl_port.h"
+
 #endif
 
 #ifdef DRIVER_GC9A01
@@ -26,6 +27,9 @@ const char* TAG = "TFT_SPI";
 // 背光PWM初始化
 esp_err_t TFT_SPI::initBrightness(void)
 {
+    if (bl == GPIO_NUM_NC) {
+        return ESP_OK; // 如果没有背光引脚，则不进行初始化
+    }
     // Setup LEDC peripheral for PWM backlight control
     const ledc_channel_config_t LCD_backlight_channel = {
         .gpio_num = bl,
@@ -56,6 +60,9 @@ esp_err_t TFT_SPI::initBrightness(void)
 // 背光亮度设置
 esp_err_t TFT_SPI::setBrightness(int brightness)
 {
+    if (bl == GPIO_NUM_NC) {
+        return ESP_OK; // 如果没有背光引脚，则不进行设置
+    }
     if (brightness > 100) {
         brightness = 100;
     } else if (brightness < 0) {
@@ -104,10 +111,11 @@ bool TFT_SPI::init(void)
 {
     //初始化LCD
     initLCD();
+    // initLvgl();
     //初始化触摸屏
     #if TFT_HAS_TOUCH == true
         // initTouch(NULL); // 传入NULL，表示不使用LVGL
-        initLvgl();
+
     #endif
     return true;
 
@@ -137,7 +145,7 @@ bool TFT_SPI::initLCD() {
 
     #if defined(DRIVER_GC9A01)
         spi_bus_config_t bus_conf =GC9A01_PANEL_BUS_SPI_CONFIG(BSP_LCD_SPI_CLK, BSP_LCD_SPI_MOSI,
-                                    BSP_LCD_H_RES * 80 * BSP_LCD_V_RES / 8);
+                                    BSP_LCD_H_RES * BSP_LCD_V_RES * sizeof(uint16_t));
     #elif defined(DRIVER_ST7789)
         spi_bus_config_t bus_conf = {
             .mosi_io_num = mosi,
@@ -180,31 +188,23 @@ bool TFT_SPI::initLCD() {
         .bits_per_pixel = BSP_LCD_BITS_PER_PIXEL,
     };
     
+    esp_err_t ret = ESP_OK;
     #ifdef DRIVER_GC9A01
-        if (ESP_OK != esp_lcd_new_panel_gc9a01(io_handle, &panel_config, &panel_handle)) {
-            if (panel_handle) {
-                esp_lcd_panel_del(panel_handle);
-            }
-            if (io_handle) {
-                esp_lcd_panel_io_del(io_handle);
-            }
-            spi_bus_free(BSP_LCD_SPI_NUM);
-            ESP_LOGI(TAG, "New panel failed");
-            return false;
-        }
+        ret = esp_lcd_new_panel_gc9a01(io_handle, &panel_config, &panel_handle);
     #elif defined(DRIVER_ST7789)
-        if (ESP_OK != esp_lcd_new_panel_st7789(io_handle, &panel_config, &panel_handle)) {
-            if (panel_handle) {
-                esp_lcd_panel_del(panel_handle);
-            }
-            if (io_handle) {
-                esp_lcd_panel_io_del(io_handle);
-            }
-            spi_bus_free(BSP_LCD_SPI_NUM);
-            ESP_LOGI(TAG, "New panel failed");
-            return false;
-        }
+        ret = esp_lcd_new_panel_st7789(io_handle, &panel_config, &panel_handle);
     #endif
+    if (ret != ESP_OK) {
+        if (panel_handle) {
+            esp_lcd_panel_del(panel_handle);
+        }
+        if (io_handle) {
+            esp_lcd_panel_io_del(io_handle);
+        }
+        spi_bus_free(BSP_LCD_SPI_NUM);
+        ESP_LOGI(TAG, "New panel failed");
+        return false;
+    }
     ESP_ERROR_CHECK(esp_lcd_panel_reset(panel_handle));
     ESP_ERROR_CHECK(esp_lcd_panel_init(panel_handle));
     ESP_ERROR_CHECK(esp_lcd_panel_invert_color(panel_handle, true));// Set inversion for esp32s3eye
@@ -222,7 +222,7 @@ bool TFT_SPI::initLCD() {
     return true;
 }
 
-#if TFT_HAS_TOUCH == true
+
 bool TFT_SPI::initLvgl() {
     /* 液晶屏添加LVGL接口 */
     /* 初始化LVGL */
@@ -285,6 +285,7 @@ bool TFT_SPI::initLvgl() {
     return true;
 }
 
+#if TFT_HAS_TOUCH == true
 bool TFT_SPI::initTouch(lv_disp_t* disp) {
     /* Initialize touch */
     esp_lcd_touch_config_t tp_cfg = {

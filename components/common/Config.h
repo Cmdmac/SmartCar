@@ -3,15 +3,17 @@
 #if defined(CONFIG_IDF_TARGET_ESP32S3) 
 
 //I2C
-#define I2C_SDA     GPIO_NUM_12
-#define I2C_SCL     GPIO_NUM_13
+#define I2C_SDA     GPIO_NUM_1
+#define I2C_SCL     GPIO_NUM_2
 
 // 定义 INMP441 连接的 ESP32S3 引脚
 // INMP441 config
 // #define I2S_IN_PORT I2S_NUM_0
-#define I2S_IN_BCLK 5//40 // SCK
-#define I2S_IN_LRC 4//42 // WS
-#define I2S_IN_DIN 6//41 // SD
+#define I2S_MIC_BCLK 48//40 // SCK
+#define I2S_MIC_LRC 10//42 // WS
+#define I2S_MIC_DIN 45//41 // SD
+#define MIC_SAMPLE_RATE 16000
+#define MIC_BIT_WIDTH I2S_DATA_BIT_WIDTH_32BIT
 
 #define I2S_SPK_DOUT      12
 #define I2S_SPK_BCLK      11
@@ -30,22 +32,22 @@
 // camera
 #define PWDN_GPIO_NUM -1
 #define RESET_GPIO_NUM -1
-#define XCLK_GPIO_NUM 15
-#define SIOD_GPIO_NUM 4
-#define SIOC_GPIO_NUM 5
+#define XCLK_GPIO_NUM 3
+#define SIOD_GPIO_NUM 1
+#define SIOC_GPIO_NUM 2
 
-#define Y2_GPIO_NUM 11
-#define Y3_GPIO_NUM 9
-#define Y4_GPIO_NUM 8
-#define Y5_GPIO_NUM 10
-#define Y6_GPIO_NUM 12
-#define Y7_GPIO_NUM 18
-#define Y8_GPIO_NUM 17
-#define Y9_GPIO_NUM 16
+#define Y2_GPIO_NUM 7
+#define Y3_GPIO_NUM 4
+#define Y4_GPIO_NUM 5
+#define Y5_GPIO_NUM 6
+#define Y6_GPIO_NUM 15
+#define Y7_GPIO_NUM 17
+#define Y8_GPIO_NUM 18
+#define Y9_GPIO_NUM 8
 
-#define VSYNC_GPIO_NUM 6
-#define HREF_GPIO_NUM 7
-#define PCLK_GPIO_NUM 13
+#define VSYNC_GPIO_NUM 9
+#define HREF_GPIO_NUM 46
+#define PCLK_GPIO_NUM 16
 
 
 /***********************************************************/
@@ -58,11 +60,11 @@
 #define LCD_LEDC_CH                 LEDC_CHANNEL_0
 #define TFT_INVERT_COLOR                false
 
-#define TFT_LCD_H_RES              (128)
-#define TFT_LCD_V_RES              (128)
+#define TFT_LCD_H_RES              (240)
+#define TFT_LCD_V_RES              (240)
 
-#define DRIVER_GC9A01
-// #define DRIVER_ST7789
+// #define DRIVER_GC9A01
+#define DRIVER_ST7789
 #define USE_LVGL                    false
 #define TFT_HAS_TOUCH               false
 
@@ -89,12 +91,12 @@
 // #define BSP_LCD_RST           (GPIO_NUM_NC)
 // #define BSP_LCD_BACKLIGHT     (GPIO_NUM_42)  
 
-#define TFT_LCD_SPI_MOSI      (GPIO_NUM_3)
-#define TFT_LCD_SPI_CLK       (GPIO_NUM_8)
-#define TFT_LCD_SPI_CS        (GPIO_NUM_18)
-#define TFT_LCD_DC            (GPIO_NUM_46)
+#define TFT_LCD_SPI_MOSI      (GPIO_NUM_41)
+#define TFT_LCD_SPI_CLK       (GPIO_NUM_40)
+#define TFT_LCD_SPI_CS        (GPIO_NUM_39)
+#define TFT_LCD_DC            (GPIO_NUM_38)
 #define TFT_LCD_RST           (GPIO_NUM_NC)
-#define TFT_LCD_BACKLIGHT     (GPIO_NUM_NC)  
+#define TFT_LCD_BACKLIGHT     (GPIO_NUM_42)  
 
 #elif defined(CONFIG_IDF_TARGET_ESP32C3) 
 

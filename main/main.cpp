@@ -6,25 +6,28 @@
 // #include "Led.h"
 // #include "Servo2.h"
 #include "DataChannel.h"
-// #include "Net.h"
-#include "Ir.h"
+#include "Net.h"
+// #include "Ir.h"
 // #include "QMI8658.h"
 // #include "PCA9557.h"
-// #include "Camera.h"
+#include "Camera.h"
 #include "TFT_SPI.h"
 #include "logo_en_240x240_lcd.h"
 #include "demos/lv_demos.h"
 // #include "Sr.h"
-// #include <TCA6408.h>
+#include <TCA6408.h>
 // #include "power_management.h"
 // #include "Battery.h"
 // #include "MAX1704X.h"
 // Led led;
-// #include "Speaker.h"
+// #include "Mic.h"
+#include "Speaker.h"
 #include "Config.h"
 #include "esp_log.h"
 #include "driver/i2c_master.h"
-#include "es8311_audio_codec.h"
+#include "esp_camera.h"
+
+// #include "es8311_audio_codec.h"
 // #include "bsp/esp-bsp.h"
 // #include "bsp/display.h"
 
@@ -33,14 +36,17 @@
 // const int port = 8888; // 监听的端口
 #define bufferLen 512
 
-// extern Net net;
+extern Net net;
 
-Ir ir(GPIO_NUM_46, GPIO_NUM_3); // 0x15 for iFarm4G board
+// Ir ir(GPIO_NUM_46, GPIO_NUM_3); // 0x15 for iFarm4G board
 // QMI8658 qmi8658;
 // PCA9557 io(0x19, &Wire); // 0x19 for iFarm4G board
 
-// Camera camera;
+Camera camera(Y2_GPIO_NUM, Y3_GPIO_NUM, Y4_GPIO_NUM, Y5_GPIO_NUM, Y6_GPIO_NUM, Y7_GPIO_NUM, Y8_GPIO_NUM, Y9_GPIO_NUM,
+              XCLK_GPIO_NUM, PCLK_GPIO_NUM, VSYNC_GPIO_NUM, HREF_GPIO_NUM, SIOD_GPIO_NUM, SIOC_GPIO_NUM,
+              PWDN_GPIO_NUM, RESET_GPIO_NUM);
 
+// Mic mic(I2S_MIC_BCLK, I2S_MIC_BCLK, I2S_MIC_DIN);
 // Speaker speaker(I2S_SPK_LRC, I2S_SPK_BCLK, I2S_SPK_DOUT);
 TFT_SPI tft(TFT_LCD_SPI_MOSI, TFT_LCD_SPI_CLK, TFT_LCD_SPI_CS, TFT_LCD_DC, TFT_LCD_RST, TFT_LCD_BACKLIGHT);
 // Sr sr;
@@ -50,24 +56,24 @@ TFT_SPI tft(TFT_LCD_SPI_MOSI, TFT_LCD_SPI_CLK, TFT_LCD_SPI_CS, TFT_LCD_DC, TFT_L
 
 // const TCA6408::DeviceAddress DEVICE_ADDRESS = TCA6408::DEVICE_ADDRESS_0;
 // uint8_t RESET_PIN = 0;
-// TCA6408 tca6408;
+TCA6408 tca6408;
 
 i2c_master_bus_handle_t i2c_bus_;
 
 
 
+
 void setup() {
-  // Serial.begin(115200);
+  Serial.begin(115200);
   // Serial.println("setup");
   // Init_i2s();
 
-    // net.setUpWifi();
   // 启动UDP
   // xTaskCreate(udp_client_task, "udp_client", 4096, NULL, 5, &client_task_handle);
   // ir.setup();
   // ir.initIrDatas();
   // ir.startLearn();
-  // camera.setUp();
+  Wire.begin(I2C_SDA, I2C_SCL);
       // camera.startStreamServer(); 
     // pinMode(GPIO_NUM_36, OUTPUT); // 设置GPIO_NUM_18为输出模式
     // digitalWrite(GPIO_NUM_36, HIGH); // 关闭LED
@@ -86,7 +92,18 @@ void setup() {
   // battery.setup();
 
 
-  // tca6408.setup(Wire, DEVICE_ADDRESS);
+  tca6408.setup(Wire, TCA6408::DEVICE_ADDRESS_0);
+  tca6408.pinMode(TCA6408::P3, OUTPUT);
+  if (tca6408.digitalWrite(TCA6408::P3, LOW)) {
+    ESP_LOGI("Main", "TCA6408 P3 set to LOW");
+  } 
+
+  camera.setUp();
+
+  net.setUpWifi();
+
+  // camera.startStreamServer();
+
   // tca6408.setResetPin(RESET_PIN);
 
   // Serial.print("p0: ");
@@ -106,22 +123,26 @@ void setup() {
   // Serial.println(tca6408.digitalRead(TCA6408::P7));
 
   // tca6408.printPinStates();
-
+  // pinMode(GPIO_NUM_42, OUTPUT); // 设置GPIO_NUM_36为输出模式
+  // digitalWrite(GPIO_NUM_42, HIGH); // 打开背光
   tft.setup();
-  // tft.setBrightness(100);
+  tft.setBrightness(100);
 
   // battery_voltage_monitor_start();
   // tft.fillScreen(0xff0);
   // sr.setup();
 
-  // int x = (BSP_LCD_H_RES - 240.0) / 2;
-  // int y = (BSP_LCD_V_RES - 240.0) / 2;
+  int x = (TFT_LCD_H_RES - 240.0) / 2;
+  int y = (TFT_LCD_H_RES - 240.0) / 2;
+
+  // app_camera_lcd();
+
   // Serial.println(x);
   // Serial.println(y);
-  // tft.drawPicture(x,  y, x + 240, y + 240, (const unsigned char *) logo_en_240x240_lcd);
+  tft.drawPicture(x,  y, x + 240, y + 240, (const unsigned char *) logo_en_240x240_lcd);
       // tft.drawPicture(0,  0, 128, 128, (const unsigned char *) logo_en_240x240_lcd);
 
-  tft.fillScreen(0xff0);
+  // tft.fillScreen(0xff0);
 
   // lv_demo_benchmark(); 
   // qmi8658.setUp();
@@ -169,9 +190,13 @@ void setup() {
 
   // es8311.EnableInput(true);
   // es8311.EnableOutput(true);
-
-  // speaker.setup();
-  // speaker.play("http://music.163.com/song/media/outer/url?id=447925558.mp3");
+  // mic.setup(MIC_SAMPLE_RATE, MIC_BIT_WIDTH);
+  // char buffer[256];
+  // memset(buffer, 0, sizeof(buffer));
+  // size_t s = mic.read(buffer, 256); // 清空缓冲区
+  // ESP_LOGI("Main", "read size=%d", s);
+//   speaker.setup();
+//   speaker.play("http://192.168.0.101:3000/test.mp3");
 }
 
 void loop() {
@@ -189,7 +214,7 @@ void loop() {
   // ESP_LOGI("Main", "angle_x = %.1f  angle_y = %.1f angle_z = %.1f", data.AngleX, data.AngleY, data.AngleZ);
   // Serial.println(io.digitalRead(6));
   vTaskDelay(pdMS_TO_TICKS(1 * 1000));  // 至少释放1ms CPU时间
-  ESP_LOGI("Main", "send ir data");
+  // ESP_LOGI("Main", "send ir data");
   // ir.send({0x7F80, 0xFE01}); // 发送红外数据
 }
 

@@ -4,6 +4,9 @@
 # CMakeLists in this exact order for cmake to work correctly
 # cmake_minimum_required(VERSION 3.16)
 
-idf_component_register(SRCS "Sr.cpp"
+# idf_component_register(SRCS "Sr.cpp"
+#                        INCLUDE_DIRS "."
+#                        REQUIRES esp-sr esp_codec_dev mic)
+idf_component_register(SRCS
                        INCLUDE_DIRS "."
-                       REQUIRES esp-sr esp_codec_dev mic)
+                       )

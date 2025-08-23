@@ -10,6 +10,17 @@ class PCA9557 {
         bool write_register(uint8_t reg, uint8_t value) ;
 
     public:
+        enum Pin
+        {
+            P0,
+            P1,
+            P2,
+            P3,
+            P4,
+            P5,
+            P6,
+            P7
+        };
         PCA9557(int address = 0x18, TwoWire *bus = &Wire) ; // 0x18 => A0, A1, A2 connect to GND
 
         bool pinMode(int pin, int mode) ;

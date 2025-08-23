@@ -9,10 +9,11 @@
 #include "Net.h"
 // #include "Ir.h"
 // #include "QMI8658.h"
-// #include "PCA9557.h"
+#include "PCA9557.h"
 #include "Camera.h"
 #include "TFT_SPI.h"
 #include "logo_en_240x240_lcd.h"
+#include "yingwu.h"
 #include "demos/lv_demos.h"
 // #include "Sr.h"
 #include <TCA6408.h>
@@ -40,7 +41,7 @@ extern Net net;
 
 // Ir ir(GPIO_NUM_46, GPIO_NUM_3); // 0x15 for iFarm4G board
 // QMI8658 qmi8658;
-// PCA9557 io(0x19, &Wire); // 0x19 for iFarm4G board
+PCA9557 pca9557(0x19, &Wire); // 0x19 for iFarm4G board
 
 Camera camera(Y2_GPIO_NUM, Y3_GPIO_NUM, Y4_GPIO_NUM, Y5_GPIO_NUM, Y6_GPIO_NUM, Y7_GPIO_NUM, Y8_GPIO_NUM, Y9_GPIO_NUM,
               XCLK_GPIO_NUM, PCLK_GPIO_NUM, VSYNC_GPIO_NUM, HREF_GPIO_NUM, SIOD_GPIO_NUM, SIOC_GPIO_NUM,
@@ -48,7 +49,7 @@ Camera camera(Y2_GPIO_NUM, Y3_GPIO_NUM, Y4_GPIO_NUM, Y5_GPIO_NUM, Y6_GPIO_NUM, Y
 
 // Mic mic(I2S_MIC_BCLK, I2S_MIC_BCLK, I2S_MIC_DIN);
 // Speaker speaker(I2S_SPK_LRC, I2S_SPK_BCLK, I2S_SPK_DOUT);
-TFT_SPI tft(TFT_LCD_SPI_MOSI, TFT_LCD_SPI_CLK, TFT_LCD_SPI_CS, TFT_LCD_DC, TFT_LCD_RST, TFT_LCD_BACKLIGHT);
+TFT_SPI tft(TFT_LCD_SPI_MOSI, TFT_LCD_SPI_CLK, TFT_LCD_SPI_CS, TFT_LCD_DC, TFT_LCD_RST, TFT_LCD_BACKLIGHT, TFT_BACKLIGHT_OUTPUT_INVERT);
 // Sr sr;
 
 // MAX1704X max1704x(1.0);
@@ -92,15 +93,18 @@ void setup() {
   // battery.setup();
 
 
-  tca6408.setup(Wire, TCA6408::DEVICE_ADDRESS_0);
-  tca6408.pinMode(TCA6408::P3, OUTPUT);
-  if (tca6408.digitalWrite(TCA6408::P3, LOW)) {
-    ESP_LOGI("Main", "TCA6408 P3 set to LOW");
-  } 
+  // tca6408.setup(Wire, TCA6408::DEVICE_ADDRESS_0);
+  // tca6408.pinMode(TCA6408::P3, OUTPUT);
+  // if (tca6408.digitalWrite(TCA6408::P3, LOW)) {
+  //   ESP_LOGI("Main", "TCA6408 P3 set to LOW");
+  // } 
+  
 
-  camera.setUp();
+  // if (camera.setUp()) {
+  //   ESP_LOGI("Main", "camera setup success");
+  // }
 
-  net.setUpWifi();
+  // net.setUpWifi();
 
   // camera.startStreamServer();
 
@@ -125,24 +129,26 @@ void setup() {
   // tca6408.printPinStates();
   // pinMode(GPIO_NUM_42, OUTPUT); // 设置GPIO_NUM_36为输出模式
   // digitalWrite(GPIO_NUM_42, HIGH); // 打开背光
+  tft.setEnalbeCallback([](){
+    pca9557.pinMode(PCA9557::P0, OUTPUT);
+    pca9557.digitalWrite(PCA9557::P0, LOW);
+  });
   tft.setup();
-  tft.setBrightness(100);
+  // tft.setBrightness(100);
 
   // battery_voltage_monitor_start();
   // tft.fillScreen(0xff0);
   // sr.setup();
 
-  int x = (TFT_LCD_H_RES - 240.0) / 2;
-  int y = (TFT_LCD_H_RES - 240.0) / 2;
+  int x = 0;//(TFT_LCD_H_RES - 320.0) / 2;
+  int y = 0;//(TFT_LCD_V_RES - 240.0) / 2;
 
-  // app_camera_lcd();
 
   // Serial.println(x);
   // Serial.println(y);
-  tft.drawPicture(x,  y, x + 240, y + 240, (const unsigned char *) logo_en_240x240_lcd);
+  tft.fillScreen(0xff0);
+  tft.drawPicture(x,  y, x + 320, y + 240, (const unsigned char *) gImage_yingwu);
       // tft.drawPicture(0,  0, 128, 128, (const unsigned char *) logo_en_240x240_lcd);
-
-  // tft.fillScreen(0xff0);
 
   // lv_demo_benchmark(); 
   // qmi8658.setUp();
@@ -214,6 +220,8 @@ void loop() {
   // ESP_LOGI("Main", "angle_x = %.1f  angle_y = %.1f angle_z = %.1f", data.AngleX, data.AngleY, data.AngleZ);
   // Serial.println(io.digitalRead(6));
   vTaskDelay(pdMS_TO_TICKS(1 * 1000));  // 至少释放1ms CPU时间
+  pca9557.pinMode(PCA9557::P2, OUTPUT);
+  pca9557.digitalWrite(PCA9557::P2, LOW);
   // ESP_LOGI("Main", "send ir data");
   // ir.send({0x7F80, 0xFE01}); // 发送红外数据
 }

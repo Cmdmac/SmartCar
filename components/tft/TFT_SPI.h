@@ -5,6 +5,7 @@
 #include "esp_log.h"
 #include "esp_check.h"
 #include "esp_lcd_types.h"
+#include <functional> // 包含std::function和std::bind
 
 
 #include "Config.h"
@@ -17,24 +18,30 @@
 
 class TFT_SPI {
     public:
-        TFT_SPI(int mosi, int clk, int cs, int dc, int rst, int bl) {
+        TFT_SPI(int mosi, int clk, int cs, int dc, int rst, int bl, bool bl_output_invert = false) {
             this->mosi = mosi;
             this->clk = clk;
             this->cs = cs;
             this->dc = dc;
             this->rst = rst;
             this->bl = bl;
+            this->bl_output_invert = bl_output_invert;
         }
         void setup();
         esp_err_t setBrightness(int brightness);
         esp_err_t turnOnBacklight();
         esp_err_t turnOffBacklight();
+        // 立创esp32s3开发板将cs引脚放在了io扩展口上，在tft屏reset之后需要重新拉低cs引脚
+        void setEnalbeCallback(std::function<void()> callback) {
+            onEnableCsPin = callback;
+        }
         void fillScreen(uint16_t color);
         void drawPicture(int x_start, int y_start, int x_end, int y_end, const unsigned char *gImage);
         void drawPicture(const unsigned char *gImage);
 
     private:
-        int mosi, clk, cs, dc, rst, bl;
+        int mosi, clk, cs, dc, rst, bl, bl_output_invert;
+        std::function<void()> onEnableCsPin = [](){};
         bool init();
         bool initLCD();
         #if USE_LVGL == true

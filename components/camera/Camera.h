@@ -1,3 +1,7 @@
+#include "Config.h"
+#include "TFT_SPI.h"
+#include "esp_camera.h"
+
 #ifndef _CAMERA_H
 
 class Camera {

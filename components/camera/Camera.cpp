@@ -2,7 +2,7 @@
 #include "camera.h"
 #define CAMERA_MODEL_ESP32S3_EYE // Has PSRAM
 #include "esp_camera.h"
-#include "camera_pins.h"
+// #include "camera_pins.h"
 #include <Arduino.h>
 
 

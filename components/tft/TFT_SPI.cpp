@@ -30,28 +30,30 @@ esp_err_t TFT_SPI::initBrightness(void)
     if (bl == GPIO_NUM_NC) {
         return ESP_OK; // 如果没有背光引脚，则不进行初始化
     }
-    // Setup LEDC peripheral for PWM backlight control
-    const ledc_channel_config_t LCD_backlight_channel = {
-        .gpio_num = bl,
-        .speed_mode = LEDC_LOW_SPEED_MODE,
-        .channel = LCD_LEDC_CH,
-        .intr_type = LEDC_INTR_DISABLE,
-        .timer_sel = LEDC_TIMER_1,
-        .duty = 0,
-        .hpoint = 0,
-        // .flags.output_invert = true
-    };
-    // LCD_backlight_channel.flags.output_invert = true;
 
     const ledc_timer_config_t LCD_backlight_timer = {
         .speed_mode = LEDC_LOW_SPEED_MODE,
         .duty_resolution = LEDC_TIMER_10_BIT,
         .timer_num = LEDC_TIMER_1,
-        .freq_hz = 5000,
+        .freq_hz = 25000,
         .clk_cfg = LEDC_AUTO_CLK
     };
-
     ESP_ERROR_CHECK(ledc_timer_config(&LCD_backlight_timer));
+
+    // Setup LEDC peripheral for PWM backlight control
+    const ledc_channel_config_t LCD_backlight_channel = {
+        .gpio_num = bl,
+        .speed_mode = LEDC_LOW_SPEED_MODE,
+        .channel = TFT_LEDC_CH,
+        .intr_type = LEDC_INTR_DISABLE,
+        .timer_sel = LEDC_TIMER_1,
+        .duty = 0,
+        .hpoint = 0,
+        .flags = {
+            .output_invert = true,
+        }
+    };
+    // LCD_backlight_channel.flags.output_invert = true;
     ESP_ERROR_CHECK(ledc_channel_config(&LCD_backlight_channel));
 
     return ESP_OK;
@@ -72,8 +74,8 @@ esp_err_t TFT_SPI::setBrightness(int brightness)
     ESP_LOGI(TAG, "Setting LCD backlight: %d%%", brightness);
     // LEDC resolution set to 10bits, thus: 100% = 1023
     uint32_t duty_cycle = (1023 * brightness) / 100;
-    ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, LCD_LEDC_CH, duty_cycle));
-    ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, LCD_LEDC_CH));
+    ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, TFT_LEDC_CH, duty_cycle));
+    ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, TFT_LEDC_CH));
 
     return ESP_OK;
 }
@@ -131,12 +133,11 @@ bool TFT_SPI::init(void)
 }
 
 bool TFT_SPI::initLCD() {
-    initBrightness();
 
-    #if defined(DRIVER_GC9A01)
+    #if defined(TFT_DRIVER_GC9A01)
         spi_bus_config_t bus_conf =GC9A01_PANEL_BUS_SPI_CONFIG(TFT_LCD_SPI_CLK, TFT_LCD_SPI_MOSI,
                                     TFT_LCD_H_RES * TFT_LCD_V_RES * sizeof(uint16_t));
-    #elif defined(DRIVER_ST7789)
+    #elif defined(TFT_DRIVER_ST7789)
         spi_bus_config_t bus_conf = {
             .mosi_io_num = mosi,
             .miso_io_num = GPIO_NUM_NC,
@@ -147,41 +148,42 @@ bool TFT_SPI::initLCD() {
         };
     #endif
 
-    ESP_ERROR_CHECK(spi_bus_initialize(TFT_LCD_SPI_NUM, &bus_conf, SPI_DMA_CH_AUTO));
+    ESP_ERROR_CHECK(spi_bus_initialize(TFT_SPI_NUM, &bus_conf, SPI_DMA_CH_AUTO));
 
     ESP_LOGI(TAG, "Install panel IO");
     // esp_lcd_panel_io_handle_t io_handle = NULL;
-    #ifdef DRIVER_GC9A01
+    #ifdef TFT_DRIVER_GC9A01
         esp_lcd_panel_io_spi_config_t io_config = GC9A01_PANEL_IO_SPI_CONFIG(TFT_LCD_SPI_CS, TFT_LCD_DC,
                 NULL, NULL);
-    #elif defined(DRIVER_ST7789)
+    #elif defined(TFT_DRIVER_ST7789)
         esp_lcd_panel_io_spi_config_t io_config = {
             .cs_gpio_num = cs,
             .dc_gpio_num = dc,
-            .spi_mode = 0, // spi模式，0~3
-            .pclk_hz = TFT_LCD_PIXEL_CLOCK_HZ,
+            .spi_mode = TFT_SPI_MODE, // spi模式，0~3
+            .pclk_hz = TFT_PIXEL_CLOCK_HZ,
             .trans_queue_depth = 10,
-            .lcd_cmd_bits = LCD_CMD_BITS,
-            .lcd_param_bits = LCD_PARAM_BITS,
-            .flags = {
-                .sio_mode = 0
-            }
+            .lcd_cmd_bits = TFT_CMD_BITS,
+            .lcd_param_bits = TFT_PARAM_BITS,
+            // .flags = {
+            //     .sio_mode = 0
+            // }
         };
     #endif
     // Attach the LCD to the SPI bus
-    ESP_ERROR_CHECK(esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)TFT_LCD_SPI_NUM, &io_config, &io_handle));
+    ESP_ERROR_CHECK(esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)TFT_SPI_NUM, &io_config, &io_handle));
 
     // ESP_LOGI(TAG, "Install ST7789 panel driver");
     esp_lcd_panel_dev_config_t panel_config = {
         .reset_gpio_num = rst,
-        .rgb_endian = LCD_RGB_ENDIAN_RGB, // RGB顺序
-        .bits_per_pixel = TFT_LCD_BITS_PER_PIXEL,
+        // .rgb_endian = LCD_RGB_ENDIAN_RGB, // RGB顺序
+        .rgb_ele_order = LCD_RGB_ELEMENT_ORDER_RGB, // RGB元素顺序
+        .bits_per_pixel = TFT_BITS_PER_PIXEL,
     };
     
-    esp_err_t ret = ESP_OK;
-    #ifdef DRIVER_GC9A01
+    esp_err_t ret = ESP_FAIL;
+    #ifdef TFT_DRIVER_GC9A01
         ret = esp_lcd_new_panel_gc9a01(io_handle, &panel_config, &panel_handle);
-    #elif defined(DRIVER_ST7789)
+    #elif defined(TFT_DRIVER_ST7789)
         ret = esp_lcd_new_panel_st7789(io_handle, &panel_config, &panel_handle);
     #endif
     if (ret != ESP_OK) {
@@ -191,23 +193,24 @@ bool TFT_SPI::initLCD() {
         if (io_handle) {
             esp_lcd_panel_io_del(io_handle);
         }
-        spi_bus_free(TFT_LCD_SPI_NUM);
+        spi_bus_free(TFT_SPI_NUM);
         ESP_LOGI(TAG, "New panel failed");
         return false;
     }
     ESP_ERROR_CHECK(esp_lcd_panel_reset(panel_handle));
+    this->onEnableCsPin(); // 立创esp32s3开发板将cs引脚放在了io扩展口上，在tft屏reset之后需要重新拉低cs引脚
     ESP_ERROR_CHECK(esp_lcd_panel_init(panel_handle));
     ESP_ERROR_CHECK(esp_lcd_panel_invert_color(panel_handle, TFT_INVERT_COLOR));// Set inversion for esp32s3eye
 
-    // turn on display
-    ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(panel_handle, true));
     // esp_lcd_panel_reset(panel_handle);  // 液晶屏复位
     // esp_lcd_panel_init(panel_handle);  // 初始化配置寄存器
     // esp_lcd_panel_invert_color(panel_handle, true); // 颜色反转
-    // esp_lcd_panel_swap_xy(panel_handle, false);  // 显示翻转 
-    // esp_lcd_panel_mirror(panel_handle, true, false); // 镜像
+    esp_lcd_panel_swap_xy(panel_handle, TFT_SWAP_XY);  // 显示翻转 
+    esp_lcd_panel_mirror(panel_handle, TFT_MIRROR_X, TFT_MIRROR_Y); // 镜像
 
     ESP_LOGI(TAG, "turn on lcd");
+    // turn on display
+    ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(panel_handle, true));
     // setBackgroundColor(0x000); // 设置整屏背景黑色
     return true;
 }
@@ -319,6 +322,7 @@ void TFT_SPI::setup(void)
 {
     esp_err_t ret = ESP_OK;
     ESP_LOGI(TAG, "init tft lcd");    
+    initBrightness();
     bool r = init(); // 液晶屏驱动初始
     ret = turnOnBacklight(); // 打开背光显示
     // test_draw_bitmap(panel_handle);

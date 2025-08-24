@@ -8,17 +8,8 @@ void Speaker::setup() {
     pinMode(47, OUTPUT);
     digitalWrite(47, HIGH);
     // 配置I2S - 根据实际硬件修改
-    auto config = i2s.defaultConfig(TX_MODE);
-    config.pin_ws = lrc;        // 更换为你的引脚
-    config.pin_bck = bclk;
-    config.pin_data = dout;
-    config.sample_rate = 44100;
-    config.bits_per_sample = 16;
-    config.channels = 2;
-    i2s.begin(config);
 
-    // 配置音频处理流
-    audioOutput.begin();
+
 
     // 配置安全客户端（跳过证书验证）
     // client.setInsecure();
@@ -34,8 +25,7 @@ void Speaker::play(const char* source) {
     Serial.printf("Playing: %s\n", source);
     is_playing = true;
     
-    // 打开网络流
-    urlStream.begin(source);
+
     
     // // 重置复制器
     // copier.resize
@@ -58,8 +48,7 @@ void Speaker::stop() {
     if (!is_playing) return;
     
     is_playing = false;
-    urlStream.end();
-    audioOutput.flush();
+
     Serial.println("Playback stopped");
 }
 

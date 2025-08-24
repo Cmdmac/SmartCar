@@ -6,4 +6,4 @@
 
 idf_component_register(SRCS "Speaker.cpp"
                        INCLUDE_DIRS "."
-                       REQUIRES arduino-esp32 arduino-audio-tools arduino-libhelix esp-tls)
+                       REQUIRES arduino-esp32 esp-tls)

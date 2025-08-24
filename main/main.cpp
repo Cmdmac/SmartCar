@@ -5,8 +5,7 @@
 #include "Wire.h"
 // #include "Led.h"
 // #include "Servo2.h"
-#include "DataChannel.h"
-#include "Net.h"
+#include "Application.h"
 // #include "Ir.h"
 // #include "QMI8658.h"
 #include "PCA9557.h"
@@ -37,7 +36,7 @@
 // const int port = 8888; // 监听的端口
 #define bufferLen 512
 
-extern Net net;
+Application app;
 
 // Ir ir(GPIO_NUM_46, GPIO_NUM_3); // 0x15 for iFarm4G board
 // QMI8658 qmi8658;

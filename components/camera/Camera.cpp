@@ -31,11 +31,11 @@ bool Camera::setUp() {
     config.pin_pwdn = pwdn;
     config.pin_reset = reset;
     config.xclk_freq_hz = 24000000;
-    config.frame_size = FRAMESIZE_QCIF;
+    config.frame_size = FRAMESIZE_QVGA;
     config.pixel_format = PIXFORMAT_RGB565; // for streaming
     config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
     config.fb_location = CAMERA_FB_IN_PSRAM;
-    // config.jpeg_quality = 12;
+    config.jpeg_quality = 12;
     config.fb_count = 2;
     // config.fb_location = CAMERA_FB_IN_PSRAM;
     // config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
@@ -60,6 +60,10 @@ bool Camera::setUp() {
         return false;
     }
 
+    sensor_t *s = esp_camera_sensor_get(); // 获取摄像头型号
+    if (s->id.PID == GC0308_PID) {
+        s->set_hmirror(s, 1);  // 这里控制摄像头镜像 写1镜像 写0不镜像
+    }
     // sensor_t * s = esp_camera_sensor_get();
     // initial sensors are flipped vertically and colors are a bit saturated
     // s->set_vflip(s, 1); // flip it back
@@ -101,8 +105,10 @@ void Camera::task_process_camera(void *arg)
         camera_fb_t *frame = esp_camera_fb_get();
         if (frame) {
             xQueueSend(instance->xQueueLCDFrame, &frame, portMAX_DELAY);
-            ESP_LOGI("Camera", "Captured frame: %d bytes, width: %d, height: %d, format: %d",
-                     frame->len, frame->width, frame->height, frame->format);
+            // ESP_LOGI("Camera", "Captured frame: %d bytes, width: %d, height: %d, format: %d",
+            //          frame->len, frame->width, frame->height, frame->format);
+            // Serial.printf("Captured frame: %d bytes, width: %d, height: %d, format: %d\n",
+            //          frame->len, frame->width, frame->height, frame->format);
         } else {
             // ESP_LOGE("Camera", "Failed to capture frame");
         }

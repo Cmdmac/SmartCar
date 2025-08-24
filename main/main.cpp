@@ -100,10 +100,6 @@ void setup() {
   // } 
   
 
-  // if (camera.setUp()) {
-  //   ESP_LOGI("Main", "camera setup success");
-  // }
-
   // net.setUpWifi();
 
   // camera.startStreamServer();
@@ -129,11 +125,12 @@ void setup() {
   // tca6408.printPinStates();
   // pinMode(GPIO_NUM_42, OUTPUT); // 设置GPIO_NUM_36为输出模式
   // digitalWrite(GPIO_NUM_42, HIGH); // 打开背光
-  tft.setEnalbeCallback([](){
+
+
+  tft.setup([](){
     pca9557.pinMode(PCA9557::P0, OUTPUT);
     pca9557.digitalWrite(PCA9557::P0, LOW);
   });
-  tft.setup();
   // tft.setBrightness(100);
 
   // battery_voltage_monitor_start();
@@ -148,6 +145,13 @@ void setup() {
   // Serial.println(y);
   tft.fillScreen(0xff0);
   tft.drawPicture(x,  y, x + 320, y + 240, (const unsigned char *) gImage_yingwu);
+
+
+  pca9557.pinMode(PCA9557::P2, OUTPUT);
+  pca9557.digitalWrite(PCA9557::P2, LOW);
+  if (camera.setUp(&tft)) {
+    ESP_LOGI("Main", "camera setup success");
+  }
       // tft.drawPicture(0,  0, 128, 128, (const unsigned char *) logo_en_240x240_lcd);
 
   // lv_demo_benchmark(); 
@@ -220,8 +224,6 @@ void loop() {
   // ESP_LOGI("Main", "angle_x = %.1f  angle_y = %.1f angle_z = %.1f", data.AngleX, data.AngleY, data.AngleZ);
   // Serial.println(io.digitalRead(6));
   vTaskDelay(pdMS_TO_TICKS(1 * 1000));  // 至少释放1ms CPU时间
-  pca9557.pinMode(PCA9557::P2, OUTPUT);
-  pca9557.digitalWrite(PCA9557::P2, LOW);
   // ESP_LOGI("Main", "send ir data");
   // ir.send({0x7F80, 0xFE01}); // 发送红外数据
 }

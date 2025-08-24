@@ -215,7 +215,7 @@ bool TFT_SPI::initLCD() {
     return true;
 }
 
-#if USE_LVGL == true
+#if TFT_USE_LVGL == true
 bool TFT_SPI::initLvgl() {
     /* 液晶屏添加LVGL接口 */
     /* 初始化LVGL */

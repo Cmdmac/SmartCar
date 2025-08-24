@@ -53,17 +53,17 @@
 
 /***********************************************************/
 /****************    LCD显示屏 ↓   *************************/
-#define TFT_PIXEL_CLOCK_HZ     (80 * 1000 * 1000)
-#define TFT_SPI_NUM            (SPI3_HOST)
-#define TFT_CMD_BITS               (8)
-#define TFT_PARAM_BITS             (8)
-#define TFT_BITS_PER_PIXEL     (16)
-#define TFT_LEDC_CH                 LEDC_CHANNEL_0
+#define TFT_PIXEL_CLOCK_HZ          (80 * 1000 * 1000)
+#define TFT_SPI_NUM                 (SPI3_HOST)
+#define TFT_CMD_BITS                (8)
+#define TFT_PARAM_BITS              (8)
+#define TFT_BITS_PER_PIXEL          (16)
+#define TFT_LEDC_CH                 LEDC_CHANNEL_1
 #define TFT_SPI_MODE                2
 #define TFT_INVERT_COLOR            true
-#define TFT_MIRROR_X true
-#define TFT_MIRROR_Y false
-#define TFT_SWAP_XY true
+#define TFT_MIRROR_X                true
+#define TFT_MIRROR_Y                false
+#define TFT_SWAP_XY                 true
 
 // #define BSP_LCD_H_RES              (320)
 // #define BSP_LCD_V_RES              (240)
@@ -72,7 +72,7 @@
 
 // #define DRIVER_GC9A01
 #define TFT_DRIVER_ST7789
-#define TFT_USE_LVGL                    false
+#define TFT_USE_LVGL                false
 #define TFT_HAS_TOUCH               false
 
 // #define BSP_LCD_SPI_MOSI      (GPIO_NUM_40)
@@ -82,10 +82,10 @@
 // #define BSP_LCD_RST           (GPIO_NUM_NC)
 // #define BSP_LCD_BACKLIGHT     (GPIO_NUM_42)
 
-#define TFT_LCD_SPI_MOSI      (GPIO_NUM_40)
-#define TFT_LCD_SPI_CLK       (GPIO_NUM_41)
-#define TFT_LCD_SPI_CS        (GPIO_NUM_NC)
-#define TFT_LCD_DC            (GPIO_NUM_39)
-#define TFT_LCD_RST           (GPIO_NUM_NC)
-#define TFT_LCD_BACKLIGHT     (GPIO_NUM_42)  
+#define TFT_LCD_SPI_MOSI            (GPIO_NUM_40)
+#define TFT_LCD_SPI_CLK             (GPIO_NUM_41)
+#define TFT_LCD_SPI_CS              (GPIO_NUM_NC)
+#define TFT_LCD_DC                  (GPIO_NUM_39)
+#define TFT_LCD_RST                 (GPIO_NUM_NC)
+#define TFT_LCD_BACKLIGHT           (GPIO_NUM_42)  
 #define TFT_BACKLIGHT_OUTPUT_INVERT true

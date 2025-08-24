@@ -28,13 +28,15 @@ class TFT_SPI {
             this->bl_output_invert = bl_output_invert;
         }
         void setup();
+        // 立创esp32s3开发板将cs引脚放在了io扩展口上，在tft屏reset之后需要重新拉低cs引脚
+        void setup(std::function<void()> callback) {
+            onEnableCsPin = callback;
+            setup();
+        }
         esp_err_t setBrightness(int brightness);
         esp_err_t turnOnBacklight();
         esp_err_t turnOffBacklight();
-        // 立创esp32s3开发板将cs引脚放在了io扩展口上，在tft屏reset之后需要重新拉低cs引脚
-        void setEnalbeCallback(std::function<void()> callback) {
-            onEnableCsPin = callback;
-        }
+
         void fillScreen(uint16_t color);
         void drawPicture(int x_start, int y_start, int x_end, int y_end, const unsigned char *gImage);
         void drawPicture(const unsigned char *gImage);
@@ -60,13 +62,5 @@ class TFT_SPI {
         // esp_lcd_touch_handle_t tp;   // 触摸屏句柄
         
 };
-// esp_err_t bsp_display_brightness_init(void);
-// esp_err_t bsp_display_brightness_set(int brightness_percent);
-// esp_err_t bsp_display_backlight_off(void);
-// esp_err_t bsp_display_backlight_on(void);
-// esp_err_t bsp_lcd_init(void);
-// void lcd_set_color(uint16_t color);
-// void lcd_draw_pictrue(int x_start, int y_start, int x_end, int y_end, const unsigned char *gImage);
-/***************    LCD显示屏 ↑   *************************/
-/***********************************************************/
+
 

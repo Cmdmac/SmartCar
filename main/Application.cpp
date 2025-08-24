@@ -1,4 +1,5 @@
 #include "Application.h"
+#include "Config.h"
 #include "Uri.h"
 #include "Command.h"
 
@@ -12,7 +13,7 @@ void Application::setup() {
 }
 
 void Application::setUpWifi() {
-  WiFi.begin(ssid, password);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
   Serial.print("Connecting to WiFi ");
   while (WiFi.status()!= WL_CONNECTED) {

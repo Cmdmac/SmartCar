@@ -3,9 +3,6 @@
 #include "Protocol.h"
 #include "QMC5883LCompass.h"
 
-const char* ssid     = "Stark";  // 替换为您的 Wi-Fi 网络名称
-const char* password = "fengzhiping,1101";  // 替换为您的 Wi-Fi 密码
-
 class Application {
     public:
         Application() {

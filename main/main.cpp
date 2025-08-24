@@ -92,44 +92,14 @@ void setup() {
   // battery.setup();
 
 
-  // tca6408.setup(Wire, TCA6408::DEVICE_ADDRESS_0);
-  // tca6408.pinMode(TCA6408::P3, OUTPUT);
-  // if (tca6408.digitalWrite(TCA6408::P3, LOW)) {
-  //   ESP_LOGI("Main", "TCA6408 P3 set to LOW");
-  // } 
   
 
-  // net.setUpWifi();
+  app.setUpWifi();
 
-  // camera.startStreamServer();
-
-  // tca6408.setResetPin(RESET_PIN);
-
-  // Serial.print("p0: ");
-  // Serial.println(tca6408.digitalRead(TCA6408::P0));
-  // tca6408.pinMode(TCA6408::P0, OUTPUT);
-
-  // tca6408.digitalWrite(TCA6408::P0, 1);
-  // Serial.print("P0: ");
-  // Serial.println(tca6408.digitalRead(TCA6408::P0));
-
-  // Serial.print("p7: ");
-  // Serial.println(tca6408.digitalRead(TCA6408::P7));
-  // tca6408.pinMode(TCA6408::P7, OUTPUT);
-
-  // tca6408.digitalWrite(TCA6408::P7, 1);
-  // Serial.print("P7: ");
-  // Serial.println(tca6408.digitalRead(TCA6408::P7));
-
-  // tca6408.printPinStates();
-  // pinMode(GPIO_NUM_42, OUTPUT); // 设置GPIO_NUM_36为输出模式
-  // digitalWrite(GPIO_NUM_42, HIGH); // 打开背光
-
-
-  tft.setup([](){
-    pca9557.pinMode(PCA9557::P0, OUTPUT);
-    pca9557.digitalWrite(PCA9557::P0, LOW);
-  });
+  // tft.setup([](){
+  //   pca9557.pinMode(PCA9557::P0, OUTPUT);
+  //   pca9557.digitalWrite(PCA9557::P0, LOW);
+  // });
   // tft.setBrightness(100);
 
   // battery_voltage_monitor_start();
@@ -142,15 +112,21 @@ void setup() {
 
   // Serial.println(x);
   // Serial.println(y);
-  tft.fillScreen(0xff0);
-  tft.drawPicture(x,  y, x + 320, y + 240, (const unsigned char *) gImage_yingwu);
+  // tft.fillScreen(0xff0);
+  // tft.drawPicture(x,  y, x + 320, y + 240, (const unsigned char *) gImage_yingwu);
 
-
-  pca9557.pinMode(PCA9557::P2, OUTPUT);
-  pca9557.digitalWrite(PCA9557::P2, LOW);
-  if (camera.setUp(&tft)) {
+  tca6408.setup(Wire, TCA6408::DEVICE_ADDRESS_0);
+  tca6408.pinMode(TCA6408::P3, OUTPUT);
+  if (tca6408.digitalWrite(TCA6408::P3, LOW)) {
+    ESP_LOGI("Main", "TCA6408 P3 set to LOW");
+  } 
+  // pca9557.pinMode(PCA9557::P2, OUTPUT);
+  // pca9557.digitalWrite(PCA9557::P2, LOW);
+  if (camera.setUp()) {
     ESP_LOGI("Main", "camera setup success");
+    camera.startStreamServer();
   }
+
       // tft.drawPicture(0,  0, 128, 128, (const unsigned char *) logo_en_240x240_lcd);
 
   // lv_demo_benchmark(); 

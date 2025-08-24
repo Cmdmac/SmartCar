@@ -8,10 +8,10 @@
 // 定义 INMP441 连接的 ESP32S3 引脚
 // INMP441 config
 // #define I2S_IN_PORT I2S_NUM_0
-#define I2S_MIC_BCLK 48//40 // SCK
-#define I2S_MIC_LRC 10//42 // WS
-#define I2S_MIC_DIN 45//41 // SD
-#define MIC_SAMPLE_RATE 16000
+#define I2S_MIC_BCLK        48//40 // SCK
+#define I2S_MIC_LRC         10//42 // WS
+#define I2S_MIC_DIN         45//41 // SD
+#define MIC_SAMPLE_RATE         16000
 #define MIC_BIT_WIDTH I2S_DATA_BIT_WIDTH_32BIT
 
 #define I2S_SPK_DOUT      12
@@ -31,18 +31,18 @@
 // camera
 #define PWDN_GPIO_NUM -1
 #define RESET_GPIO_NUM -1
-#define XCLK_GPIO_NUM 3
+#define XCLK_GPIO_NUM 8
 #define SIOD_GPIO_NUM 1
 #define SIOC_GPIO_NUM 2
 
 #define Y2_GPIO_NUM 7
-#define Y3_GPIO_NUM 4
-#define Y4_GPIO_NUM 5
+#define Y3_GPIO_NUM 5
+#define Y4_GPIO_NUM 4
 #define Y5_GPIO_NUM 6
 #define Y6_GPIO_NUM 15
 #define Y7_GPIO_NUM 17
 #define Y8_GPIO_NUM 18
-#define Y9_GPIO_NUM 8
+#define Y9_GPIO_NUM 3
 
 #define VSYNC_GPIO_NUM 9
 #define HREF_GPIO_NUM 46

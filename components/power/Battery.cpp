@@ -58,7 +58,7 @@ int Battery::detect() {
         voltage = raw_value;
     }
 
-    voltage = smoothVoltage(voltage);
+    voltage = smoothVoltageEWMA(voltage);
 
     voltage = voltage < EMPTY_BATTERY_VOLTAGE ? EMPTY_BATTERY_VOLTAGE : voltage;
     voltage = voltage > FULL_BATTERY_VOLTAGE ? FULL_BATTERY_VOLTAGE : voltage;

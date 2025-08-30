@@ -1,3 +1,4 @@
+
 // #include "Arduino.h"
 #include "Command.h"
 #include "freertos/FreeRTOS.h"  // 包含 FreeRTOS 基础头文件
@@ -17,7 +18,7 @@
 // #include "Sr.h"
 #include <TCA6408.h>
 // #include "power_management.h"
-// #include "Battery.h"
+#include "Battery.h"
 // #include "MAX1704X.h"
 // Led led;
 // #include "Mic.h"
@@ -52,7 +53,7 @@ TFT_SPI tft(TFT_LCD_SPI_MOSI, TFT_LCD_SPI_CLK, TFT_LCD_SPI_CS, TFT_LCD_DC, TFT_L
 // Sr sr;
 
 // MAX1704X max1704x(1.0);
-// Battery battery(GPIO_NUM_2);
+Battery battery(BATTERY_ADC);
 
 // const TCA6408::DeviceAddress DEVICE_ADDRESS = TCA6408::DEVICE_ADDRESS_0;
 // uint8_t RESET_PIN = 0;
@@ -89,7 +90,7 @@ void setup() {
   // max1704x.begin(&Wire, 0x36); // 0x36 for iFarm4G board
   // max1704x.print();
 
-  // battery.setup();
+  battery.setup();
 
 
   
@@ -186,7 +187,7 @@ void setup() {
 
 void loop() {
   // Serial.println("Hello world!");
-    // Serial.println(battery.detect());
+    Serial.println(battery.detect());
 //  ESP_LOGI("Main", "loop");
     // delay(1000);
   // // qmi8658.loop();
@@ -202,4 +203,3 @@ void loop() {
   // ESP_LOGI("Main", "send ir data");
   // ir.send({0x7F80, 0xFE01}); // 发送红外数据
 }
-

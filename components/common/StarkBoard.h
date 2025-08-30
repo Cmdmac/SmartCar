@@ -5,6 +5,9 @@
 #define I2C_SDA     GPIO_NUM_1
 #define I2C_SCL     GPIO_NUM_2
 
+// Battery
+#define BATTERY_ADC                 (GPIO_NUM_10)
+
 // 定义 INMP441 连接的 ESP32S3 引脚
 // INMP441 config
 // #define I2S_IN_PORT I2S_NUM_0

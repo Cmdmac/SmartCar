@@ -4,50 +4,53 @@
 
 
 //I2C
-#define I2C_SDA     GPIO_NUM_1
-#define I2C_SCL     GPIO_NUM_2
+#define I2C_SDA                     GPIO_NUM_1
+#define I2C_SCL                     GPIO_NUM_2
+
+// Battery
+#define BATTERY_ADC                 (GPIO_NUM_10)
 
 // 定义 INMP441 连接的 ESP32S3 引脚
 // INMP441 config
 // #define I2S_IN_PORT I2S_NUM_0
-#define I2S_MIC_BCLK 48//40 // SCK
-#define I2S_MIC_LRC 10//42 // WS
-#define I2S_MIC_DIN 45//41 // SD
-#define MIC_SAMPLE_RATE 16000
-#define MIC_BIT_WIDTH I2S_DATA_BIT_WIDTH_32BIT
+#define I2S_MIC_BCLK                48//40 // SCK
+#define I2S_MIC_LRC                 10//42 // WS
+#define I2S_MIC_DIN                 45//41 // SD
+#define MIC_SAMPLE_RATE             16000
+#define MIC_BIT_WIDTH               I2S_DATA_BIT_WIDTH_32BIT
 
-#define I2S_SPK_DOUT      12
-#define I2S_SPK_BCLK      11
-#define I2S_SPK_LRC       10
+#define I2S_SPK_DOUT                12
+#define I2S_SPK_BCLK                11
+#define I2S_SPK_LRC                 10
 
 // ir
-#define IR_TX_GPIO_NUM                  GPIO_NUM_39
-#define IR_RX_GPIO_NUM                  GPIO_NUM_10
+#define IR_TX_GPIO_NUM              GPIO_NUM_39
+#define IR_RX_GPIO_NUM              GPIO_NUM_10
 
 //sdcard
-#define SPI_CS 46
-#define SPI_MOSI 3
-#define SPI_CLK 20
-#define SPI_MISO 19
+#define SPI_CS                      46
+#define SPI_MOSI                    3
+#define SPI_CLK                     20
+#define SPI_MISO                    19
 
 // camera
-#define PWDN_GPIO_NUM -1
-#define RESET_GPIO_NUM -1
-#define XCLK_GPIO_NUM 5
-#define SIOD_GPIO_NUM 1
-#define SIOC_GPIO_NUM 2
+#define PWDN_GPIO_NUM               -1
+#define RESET_GPIO_NUM              -1
+#define XCLK_GPIO_NUM               5
+#define SIOD_GPIO_NUM               1
+#define SIOC_GPIO_NUM               2
 
-#define Y9_GPIO_NUM 9
-#define Y8_GPIO_NUM 4
-#define Y7_GPIO_NUM 6
-#define Y6_GPIO_NUM 15
-#define Y5_GPIO_NUM 17
-#define Y4_GPIO_NUM 8
-#define Y3_GPIO_NUM 18
-#define Y2_GPIO_NUM 16
-#define VSYNC_GPIO_NUM 3
-#define HREF_GPIO_NUM 46
-#define PCLK_GPIO_NUM 7
+#define Y9_GPIO_NUM                 9
+#define Y8_GPIO_NUM                 4
+#define Y7_GPIO_NUM                 6
+#define Y6_GPIO_NUM                 15
+#define Y5_GPIO_NUM                 17
+#define Y4_GPIO_NUM                 8
+#define Y3_GPIO_NUM                 18
+#define Y2_GPIO_NUM                 16
+#define VSYNC_GPIO_NUM              3
+#define HREF_GPIO_NUM               46
+#define PCLK_GPIO_NUM               7
 
 
 

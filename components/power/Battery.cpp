@@ -67,7 +67,7 @@ int Battery::detect() {
     int level = (voltage - EMPTY_BATTERY_VOLTAGE) * 100 / (FULL_BATTERY_VOLTAGE - EMPTY_BATTERY_VOLTAGE);
 
     // charging = gpio_get_level(MCU_VCC_CTL);
-    ESP_LOGI(TAG, "Battery voltage%d mv, Level: %d%%", voltage, level);
+    ESP_LOGI(TAG, "voltage:%dmv, Level: %d%%", voltage, level);
     return (int)level;
 }
 

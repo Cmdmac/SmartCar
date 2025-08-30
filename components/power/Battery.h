@@ -31,6 +31,9 @@ private:
     int smoothVoltage(int voltage) {
         smoothVoltageArray[smoothIndex++] = voltage;
         smoothIndex = smoothIndex % 3;
+        if (smoothVoltageArray[0] == 0 || smoothVoltageArray[1] == 0 || smoothVoltageArray[2] == 0) {
+            return voltage;
+        }
         return (smoothVoltageArray[0] + smoothVoltageArray[1] + smoothVoltageArray[2]) / 3;
     }
 

@@ -32,8 +32,8 @@ bool Camera::setUp() {
     config.pin_reset = reset;
     config.xclk_freq_hz = 20000000;
     config.frame_size = FRAMESIZE_QVGA;
-    // config.pixel_format = PIXFORMAT_RGB565; // for streaming
-    config.pixel_format = PIXFORMAT_JPEG; // for streaming
+    config.pixel_format = PIXFORMAT_RGB565; // for streaming
+    // config.pixel_format = PIXFORMAT_JPEG; // for streaming
     config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
     config.fb_location = CAMERA_FB_IN_PSRAM;
     config.jpeg_quality = 12;
@@ -51,7 +51,7 @@ bool Camera::setUp() {
         }
     } else {
         // Best option for face detection/recognition
-        config.frame_size = FRAMESIZE_240X240;
+        config.frame_size = FRAMESIZE_HVGA;
         #if CONFIG_IDF_TARGET_ESP32S3
             config.fb_count = 2;
         #endif

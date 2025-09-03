@@ -27,7 +27,6 @@
 #include "esp_log.h"
 #include "driver/i2c_master.h"
 #include "esp_camera.h"
-
 // #include "es8311_audio_codec.h"
 // #include "bsp/esp-bsp.h"
 // #include "bsp/display.h"
@@ -92,9 +91,6 @@ void setup() {
 
   battery.setup();
 
-
-  
-
   app.setUpWifi();
 
   // tft.setup([](){
@@ -113,7 +109,7 @@ void setup() {
 
   // Serial.println(x);
   // Serial.println(y);
-  // tft.fillScreen(0xff0);
+  // tft.fillScreen(0xff0);0
   // tft.drawPicture(x,  y, x + 320, y + 240, (const unsigned char *) gImage_yingwu);
 
   tca6408.setup(Wire, TCA6408::DEVICE_ADDRESS_0);
@@ -121,8 +117,8 @@ void setup() {
   if (tca6408.digitalWrite(TCA6408::P3, LOW)) {
     ESP_LOGI("Main", "TCA6408 P3 set to LOW");
   } 
-  // pca9557.pinMode(PCA9557::P2, OUTPUT);
-  // pca9557.digitalWrite(PCA9557::P2, LOW);
+  pca9557.pinMode(PCA9557::P2, OUTPUT);
+  pca9557.digitalWrite(PCA9557::P2, LOW);
   if (camera.setUp()) {
     ESP_LOGI("Main", "camera setup success");
     camera.startStreamServer();
@@ -187,7 +183,7 @@ void setup() {
 
 void loop() {
   // Serial.println("Hello world!");
-    Serial.println(battery.detect());
+    // Serial.println(battery.detect());
 //  ESP_LOGI("Main", "loop");
     // delay(1000);
   // // qmi8658.loop();
